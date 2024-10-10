@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-
 public class Database {
 
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/mtcg";

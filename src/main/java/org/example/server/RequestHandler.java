@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
-
 public class RequestHandler implements Runnable {
     private final Socket socket;
 
