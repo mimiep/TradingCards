@@ -18,6 +18,7 @@ public class User {
         this.elo = 100;  // Start-ELO-Wertung
     }
 
+
     // Getter und Setter
     public String getId() {
         return id;
