@@ -35,4 +35,5 @@ public abstract class Card {
     public void setDamage(double damage) {
         this.damage = damage;
     }
+
 }

@@ -15,5 +15,6 @@ public class MonsterCard extends Card{
     public void setMonsterType(String monsterType) {
         this.monsterType = monsterType;
     }
+    
 
 }

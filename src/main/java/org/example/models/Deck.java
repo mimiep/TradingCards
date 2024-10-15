@@ -17,4 +17,5 @@ public class Deck {
     public void setCards(List<Card> cards) {
         this.cards = cards;
     }
+    
 }

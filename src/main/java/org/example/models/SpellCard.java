@@ -16,4 +16,5 @@ public class SpellCard extends Card {
     public void setElementType(String elementType) {
         this.elementType = elementType;
     }
+    
 }
