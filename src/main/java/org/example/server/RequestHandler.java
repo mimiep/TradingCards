@@ -37,8 +37,8 @@ public class RequestHandler implements Runnable {
                 // POST für User Login
             } else if (firstLine.startsWith("POST /sessions")) {
                 handleUserLogin(in, out);
-            } else {
-                sendResponse(out, 405, "Method Not Allowed", "Only POST requests are allowed.");
+            } else {    //praktisch fürs CURL, er lässt somit die anderen Test noch nicht durch
+                sendResponse(out, 405, "Method Not Allowed", "Methode ");
             }
 
         } catch (IOException | SQLException e) {
@@ -83,7 +83,13 @@ public class RequestHandler implements Runnable {
                 sendResponse(out, 409, "Conflict", "{\"message\":\"User already exists.\"}");
             }
         } catch (SQLException e) {
-            sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+
+            if (e.getSQLState().equals("23505")) { // 23505 ist der SQL-State für Unique-Constraint-Verletzungen in PostgreSQL
+                sendResponse(out, 409, "Conflict", "{\"message\":\"User already exists.\"}");
+            } else {
+                sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+            }
+
         }
     }
 

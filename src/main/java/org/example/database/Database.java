@@ -10,10 +10,10 @@ import java.util.UUID;
 public class Database {
 
     private static final String DB_URL = "jdbc:postgresql://localhost:5432/mtcg";
-    private static final String DB_USER = "mtcg_user"; // Dein DB Benutzername
-    private static final String DB_PASSWORD = "audi80"; // Dein DB Passwort
+    private static final String DB_USER = "mtcg_user";
+    private static final String DB_PASSWORD = "audi80";
 
-    // Verbindung zur Datenbank herstellen
+    // Verbindung zu DB herstellen
     public Connection connect() {
         Connection connection = null;
         try {
@@ -29,7 +29,7 @@ public class Database {
     //Testen der Datenbank
     public void testConnection() {
         try (Connection connection = connect();
-             PreparedStatement stmt = connection.prepareStatement("SELECT 1")) { // Eine einfache Abfrage
+             PreparedStatement stmt = connection.prepareStatement("SELECT 1")) { //Testabfrage
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 System.out.println("Successfully connected to the database!");

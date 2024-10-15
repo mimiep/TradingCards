@@ -13,7 +13,7 @@ public class UserLogic {
     private final Database database;
 
     public UserLogic() {
-        this.database = new Database(); // Verbindung zur Datenbank initialisieren
+        this.database = new Database(); // Verbindung zur Datenbank
     }
 
     // Benutzer registrieren
@@ -42,7 +42,7 @@ public class UserLogic {
                 ResultSet rs = loginStmt.executeQuery();
 
                 if (rs.next()) {
-                    // Token generieren (UUID als eindeutiger Token)
+                    // Token generieren
                     String token = generateToken(username);
 
                     // Den generierten Token in der Datenbank speichern
