@@ -1,5 +1,7 @@
 package org.example.server;
 
+import org.example.models.UserLogic; // Importiere die UserLogic-Klasse
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,10 +11,12 @@ import java.util.concurrent.Executors;
 public class Server {
     private final int port;
     private final ExecutorService threadPool;
+    private final UserLogic userLogic; // Hinzufügen von UserLogic
 
     public Server(int port) {
         this.port = port;
         this.threadPool = Executors.newFixedThreadPool(10); // Thread-Pool mit 10 Threads
+        this.userLogic = new UserLogic(); // Initialisiere UserLogic hier
     }
 
     public void start() {
@@ -21,7 +25,7 @@ public class Server {
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("New client connected");
-                RequestHandler requestHandler = new RequestHandler(socket);
+                RequestHandler requestHandler = new RequestHandler(socket, userLogic); // Übergebe die UserLogic
                 threadPool.execute(requestHandler); // handle request with a thread from the pool
             }
         } catch (IOException e) {

@@ -1,38 +1,48 @@
 package org.example.server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.models.User;
+import org.example.models.UserLogic;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.sql.SQLException;
 
 public class RequestHandler implements Runnable {
     private final Socket socket;
+    private final UserLogic userLogic;
+    private final ObjectMapper objectMapper;
 
-    public RequestHandler(Socket socket) {
+    public RequestHandler(Socket socket, UserLogic userLogic) {
         this.socket = socket;
+        this.userLogic = userLogic;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             OutputStream out = socket.getOutputStream()) {
+             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))) {
 
-            String requestLine = in.readLine(); // erste Zeile der Anfrage lesen
-            System.out.println("Request: " + requestLine);
+            String firstLine = in.readLine();
+            System.out.println("Request: " + firstLine);
 
-            // Beispielhafte Verarbeitung: nur GET-Anfragen unterstützen
-            if (requestLine != null && requestLine.startsWith("GET")) {
-                handleGetRequest(out);
-            } else if (requestLine != null && requestLine.startsWith("POST")) {
-                handlePostRequest(out);
+            // POST für User Registrierung
+            if (firstLine.startsWith("POST /users")) {
+                handleUserRegistration(in, out);
+                // POST für User Login
+            } else if (firstLine.startsWith("POST /sessions")) {
+                handleUserLogin(in, out);
             } else {
-                sendResponse(out, 405, "Method Not Allowed", "Only GET and POST are allowed.");
+                sendResponse(out, 405, "Method Not Allowed", "Only POST requests are allowed.");
             }
 
-        } catch (IOException e) {
-            System.out.println("Error handling request: " + e.getMessage());
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
         } finally {
             try {
                 socket.close();
@@ -42,25 +52,86 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private void handleGetRequest(OutputStream out) throws IOException {
-        String responseBody = "Hello, this is a response to a GET request!";
-        sendResponse(out, 200, "OK", responseBody);
+    private void handleUserRegistration(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
+        StringBuilder requestBody = new StringBuilder();
+        String line;
+        int contentLength = 0;
+
+        // Header lesen, um Content-Length zu bestimmen
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Content-Length:")) {
+                contentLength = Integer.parseInt(line.split(":")[1].trim());
+            }
+        }
+
+        // Den Body lesen
+        if (contentLength > 0) {
+            char[] bodyChars = new char[contentLength];
+            in.read(bodyChars, 0, contentLength);
+            requestBody.append(bodyChars);
+        }
+
+        // JSON in User-Objekt umwandeln
+        User user = objectMapper.readValue(requestBody.toString(), User.class);
+
+        // Benutzer registrieren
+        try {
+            boolean registrationSuccessful = userLogic.registerUser(user.getUsername(), user.getPassword());
+            if (registrationSuccessful) {
+                sendResponse(out, 201, "Created", "{\"message\":\"User registered successfully.\"}");
+            } else {
+                sendResponse(out, 409, "Conflict", "{\"message\":\"User already exists.\"}");
+            }
+        } catch (SQLException e) {
+            sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+        }
     }
 
-    private void handlePostRequest(OutputStream out) throws IOException {
-        // Hier kannst du die Logik für POST-Anfragen implementieren.
-        String responseBody = "This is a response to a POST request!";
-        sendResponse(out, 200, "OK", responseBody);
+    private void handleUserLogin(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
+        StringBuilder requestBody = new StringBuilder();
+        String line;
+        int contentLength = 0;
+
+        // Header lesen, um Content-Length zu bestimmen
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Content-Length:")) {
+                contentLength = Integer.parseInt(line.split(":")[1].trim());
+            }
+        }
+
+        // Den Body lesen
+        if (contentLength > 0) {
+            char[] bodyChars = new char[contentLength];
+            in.read(bodyChars, 0, contentLength);
+            requestBody.append(bodyChars);
+        }
+
+        // JSON in User-Objekt umwandeln
+        User user = objectMapper.readValue(requestBody.toString(), User.class);
+
+        // Benutzer einloggen und Token generieren
+        try {
+            String token = userLogic.loginUser(user.getUsername(), user.getPassword());
+            if (token != null) {
+                String jsonResponse = "{\"token\":\"" + token + "\"}";
+                sendResponse(out, 200, "OK", jsonResponse);
+            } else {
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid login credentials.\"}");
+            }
+        } catch (SQLException e) {
+            sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+        }
     }
 
-    private void sendResponse(OutputStream out, int statusCode, String statusMessage, String responseBody) throws IOException {
+    // HTTP-Response senden
+    private void sendResponse(BufferedWriter out, int statusCode, String statusMessage, String responseBody) throws IOException {
         String response = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n" +
-                "Content-Type: text/plain\r\n" +
+                "Content-Type: application/json\r\n" +
                 "Content-Length: " + responseBody.length() + "\r\n" +
                 "\r\n" +
                 responseBody;
 
-        out.write(response.getBytes());
+        out.write(response);
         out.flush();
     }
 }

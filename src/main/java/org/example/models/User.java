@@ -1,26 +1,24 @@
 package org.example.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 
 public class User {
-    private String id;           // Benutzer-ID (UUID)
-    private String username;     // Benutzername
-    private String password;      // Passwort
-    private int coins;           // Anzahl der verfügbaren Coins
-    private int elo;             // ELO-Wertung
+    private UUID id;
+
+    @JsonProperty("Username") public String username;
+    @JsonProperty("Password") public String password;
+    @JsonProperty("Token") public String token;
+
+
+    public User() {}
 
     // Konstruktor für die Benutzerklasse
-    public User(String username, String password) {
-        this.id = UUID.randomUUID().toString(); // UUID generieren
+    public User(UUID id, String username, String password, String token) {
+        this.id = id;
         this.username = username;
         this.password = password;
-        this.coins = 20; // Standard: 20 Coins beim Erstellen eines neuen Benutzers
-        this.elo = 100;  // Start-ELO-Wertung
-    }
-
-    // Getter und Setter
-    public String getId() {
-        return id;
+        this.token = token;
     }
 
     public String getUsername() {
@@ -39,19 +37,12 @@ public class User {
         this.password = password;
     }
 
-    public int getCoins() {
-        return coins;
+    public String getToken() {
+        return token;
     }
 
-    public void setCoins(int coins) {
-        this.coins = coins;
+    public void setToken(String token) {
+        this.token = token;
     }
 
-    public int getElo() {
-        return elo;
-    }
-
-    public void setElo(int elo) {
-        this.elo = elo;
-    }
 }
