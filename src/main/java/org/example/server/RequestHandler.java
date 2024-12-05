@@ -37,7 +37,20 @@ public class RequestHandler implements Runnable {
                 // POST für User Login
             } else if (firstLine.startsWith("POST /sessions")) {
                 handleUserLogin(in, out);
-            } else {    //praktisch fürs CURL, er lässt somit die anderen Test noch nicht durch
+            } else if (firstLine.startsWith("POST /sessions")) {
+                sendResponse(out, 405, "Method Not Allowed", "Methode ");
+            } else if (firstLine.startsWith("POST /sessions")) {
+                sendResponse(out, 405, "Method Not Allowed", "Methode ");
+            } else if (firstLine.startsWith("POST /sessions")) {
+                sendResponse(out, 405, "Method Not Allowed", "Methode ");
+            } else if (firstLine.startsWith("POST /sessions")) {
+                sendResponse(out, 405, "Method Not Allowed", "Methode ");
+            } else if (firstLine.startsWith("POST /sessions")) {
+                sendResponse(out, 405, "Method Not Allowed", "Methode ");
+            }
+
+            //Zuvor
+            else {    //praktisch fürs CURL, er lässt somit die anderen Test noch nicht durch
                 sendResponse(out, 405, "Method Not Allowed", "Methode ");
             }
 
