@@ -1,21 +1,33 @@
 package org.example.models;
 
-import java.util.List;
+import java.util.UUID;
 
 public class Deck {
-    private List<Card> cards;  //List aus Cards
+        private UUID userId;
+        private UUID cardId;
 
-    public Deck(List<Card> cards) {
-        this.cards = cards;
-    }
+        public Deck() {}
 
-    // Getter und Setter
-    public List<Card> getCards() {
-        return cards;
-    }
+        public Deck(UUID userId, UUID cardId) {
+            this.userId = userId;
+            this.cardId = cardId;
+        }
 
-    public void setCards(List<Card> cards) {
-        this.cards = cards;
-    }
+        //Getter und Setter
+        public UUID getUserId() {
+            return userId;
+        }
+
+        public void setUserId(UUID userId) {
+            this.userId = userId;
+        }
+
+        public UUID getCardId() {
+            return cardId;
+        }
+
+        public void setCardId(UUID cardId) {
+            this.cardId = cardId;
+        }
     
 }
