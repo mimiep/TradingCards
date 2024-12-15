@@ -19,5 +19,4 @@ public class Package {
     public void setPackageId(UUID packageId) {
         this.packageId = packageId;
     }
-    
 }
