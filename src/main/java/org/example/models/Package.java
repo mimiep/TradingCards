@@ -1,16 +1,23 @@
 package org.example.models;
 
-import java.util.List;
+import java.util.UUID;
 
 public class Package {
-    private List<Card> cards;
+    private UUID packageId;
 
-    public Package(List<Card> cards) {
-        this.cards = cards;
+    public Package() {}
+
+    public Package(UUID packageId) {
+        this.packageId = packageId;
     }
 
-    public List<Card> getCards() {
-        return cards;
+    // Getter und Setter
+    public UUID getPackageId() {
+        return packageId;
+    }
+
+    public void setPackageId(UUID packageId) {
+        this.packageId = packageId;
     }
     
 }
