@@ -1,20 +1,12 @@
 package org.example.models;
 
+import java.util.UUID;
+
 public class SpellCard extends Card {
-    private String elementType; //Feuer, Wasser, usw.
+    public SpellCard() {}
 
-    public SpellCard(String id, String name, double damage, String elementType) {
-        super(id, name, damage);
-        this.elementType = elementType;
-    }
-
-    // Getter und Setter
-    public String getElementType() {
-        return elementType;
-    }
-
-    public void setElementType(String elementType) {
-        this.elementType = elementType;
+    public SpellCard(UUID cardId, UUID packageId, UUID userId, String name, int damage, String elementType) {
+        super(cardId, packageId, userId, name, damage, "Spell", elementType);
     }
     
 }

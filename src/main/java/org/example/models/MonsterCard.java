@@ -1,20 +1,12 @@
 package org.example.models;
 
-public class MonsterCard extends Card{
-    private String monsterType; //Goblin, Dragon, usw. (ENUM??)
+import java.util.UUID;
 
-    public MonsterCard(String id, String name, double damage, String monsterType) {
-        super(id, name, damage);
-        this.monsterType = monsterType;
-    }
+public class MonsterCard extends Card {
 
-    public String getMonsterType() {
-        return monsterType;
-    }
+        public MonsterCard() {}
 
-    public void setMonsterType(String monsterType) {
-        this.monsterType = monsterType;
-    }
-    
-
+        public MonsterCard(UUID cardId, UUID packageId, UUID userId, String name, int damage, String elementType) {
+            super(cardId, packageId, userId, name, damage, "Monster", elementType);
+        }
 }
