@@ -3,6 +3,7 @@ package org.example.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 
+
 public abstract class Card {
     private UUID cardId;
     private UUID packageId;

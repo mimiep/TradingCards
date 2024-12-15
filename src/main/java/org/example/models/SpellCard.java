@@ -2,6 +2,7 @@ package org.example.models;
 
 import java.util.UUID;
 
+
 public class SpellCard extends Card {
     public SpellCard() {}
 
