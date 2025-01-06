@@ -252,6 +252,7 @@ public class RequestHandler implements Runnable {
     private void handleGetCardsByUser(String firstLine, BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         StringBuilder requestBody = new StringBuilder();
         String line;
+        String token = null;
         int contentLength = 0;
 
         if (!firstLine.startsWith("GET")) {
@@ -259,32 +260,40 @@ public class RequestHandler implements Runnable {
             return;
         }
 
-        // Header lesen, um Content-Length zu bestimmen
         while (!(line = in.readLine()).isEmpty()) {
-            if (line.startsWith("Content-Length:")) {
-                contentLength = Integer.parseInt(line.split(":")[1].trim());
+            if (line.startsWith("Authorization:")) {
+                token = line.split(" ")[2].trim(); // "Bearer kienboec-mtcgToken"
             }
         }
 
-        // Den Body lesen (optional, je nach dem wie der User den Request sendet, kann es auch ohne Body sein)
-        if (contentLength > 0) {
-            char[] bodyChars = new char[contentLength];
-            in.read(bodyChars, 0, contentLength);
-            requestBody.append(bodyChars);
+        if (token == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"No token provided.\"}");
+            return;
         }
 
-        // Falls ein Body vorhanden ist, das User-Objekt extrahieren
-        String[] requestParts = firstLine.split(" ");
-        UUID userId = UUID.fromString(requestParts[1].split("/")[2]);
+        UUID userId = userLogic.getUserIdFromToken(token);
+        if (userId == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid token\"}");
+            return;
+        }
 
-        // Karten des Benutzers abrufen
         try {
             List<Card> cards = cardLogic.getCardsByUser(userId);
+
+            // Wenn keine Karten gefunden werden
+            if (cards.isEmpty()) {
+                sendResponse(out, 200, "OK", "{\"message\":\"No cards found\", \"cards\":[]}");
+                return;
+            }
+
+            // Karten in JSON formatieren und zurückgeben
             String responseBody = objectMapper.writeValueAsString(cards);
             sendResponse(out, 200, "OK", responseBody);
+
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
+
     }
 
     private void handleCreatePackage(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
@@ -400,7 +409,6 @@ public class RequestHandler implements Runnable {
 
         try {
             // Benutzer validieren und Coins überprüfen
-            UserLogic userLogic = new UserLogic();
             User user = userLogic.getUserByToken(token);
 
             if (user == null) {
@@ -431,9 +439,6 @@ public class RequestHandler implements Runnable {
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
-
-
-
 
     }
 

@@ -101,6 +101,21 @@ public class UserLogic {
         return null; // Benutzer nicht gefunden
     }
 
+    public UUID getUserIdFromToken(String token) throws SQLException {
+        try (Connection connection = database.connect()) {
+            String query = "SELECT * FROM users WHERE token = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, token);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    return UUID.fromString(rs.getString("id"));
+                }
+            }
+        }
+        return null; // Benutzer nicht gefunden
+    }
+
     public void deductCoins(UUID userId, int amount) throws SQLException {
         try (Connection connection = database.connect()) {
             String query = "UPDATE users SET coins = coins - ? WHERE id = ?";
