@@ -31,11 +31,9 @@ CREATE TABLE cards (
 
 
 CREATE TABLE decks (
-
                        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
                        card_id UUID REFERENCES cards(card_id) ON DELETE CASCADE,
                        PRIMARY KEY (user_id, card_id)
-
 );
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE users TO mtcg_user;

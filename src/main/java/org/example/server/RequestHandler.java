@@ -49,7 +49,7 @@ public class RequestHandler implements Runnable {
                 handleUserLogin(in, out);
             } else if (firstLine.startsWith("POST /decks")) {
                 handleAddCardToDeck(in, out);
-            } else if (firstLine.startsWith("GET /decks")) {
+            } else if (firstLine.startsWith("GET /deck")) {
                 handleGetDeck(in, out);
             } else if (firstLine.startsWith("POST /cards")) {
                 handleCreateCard(in, out);
@@ -187,35 +187,39 @@ public class RequestHandler implements Runnable {
     }
 
     private void handleGetDeck(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
-        StringBuilder requestBody = new StringBuilder();
         String line;
-        int contentLength = 0;
+        String token = null;
 
-        // Header lesen, um Content-Length zu bestimmen
         while (!(line = in.readLine()).isEmpty()) {
-            if (line.startsWith("Content-Length:")) {
-                contentLength = Integer.parseInt(line.split(":")[1].trim());
+            if (line.startsWith("Authorization:")) {
+                token = line.split(" ")[2].trim(); // Token aus dem Header extrahieren
             }
         }
 
-        // Den Body lesen (optional, je nach dem wie der User den Request sendet, kann es auch ohne Body sein)
-        if (contentLength > 0) {
-            char[] bodyChars = new char[contentLength];
-            in.read(bodyChars, 0, contentLength);
-            requestBody.append(bodyChars);
+        if (token == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            return;
         }
 
-        // Falls ein Body vorhanden ist, das User-Objekt extrahieren
-        Deck deckRequest = objectMapper.readValue(requestBody.toString(), Deck.class);
-
-        // Deck des Benutzers abrufen
         try {
-            List<UUID> deck = deckLogic.getDeck(deckRequest.getUserId());
+            // Benutzer-ID basierend auf dem Token abrufen
+            UUID userId = userLogic.getUserIdFromToken(token);
+            if (userId == null) {
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}");
+                return;
+            }
+
+            // Deck des Benutzers abrufen
+            List<UUID> deck = deckLogic.getDeck(userId);
+
+            // Deck als JSON zurückgeben (leere Liste, wenn kein Deck vorhanden ist)
             String responseBody = objectMapper.writeValueAsString(deck);
             sendResponse(out, 200, "OK", responseBody);
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
+
+
     }
 
     private void handleCreateCard(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
