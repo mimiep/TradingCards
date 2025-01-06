@@ -4,10 +4,10 @@ import java.util.UUID;
 
 
 public class SpellCard extends Card {
-    public SpellCard() {}
 
-    public SpellCard(UUID cardId, UUID packageId, UUID userId, String name, int damage, String elementType) {
-        super(cardId, packageId, userId, name, damage, "Spell", elementType);
+
+    public SpellCard(UUID cardId, String name, int damage, String type, String elementType, UUID packageId, UUID userId) {
+        super(cardId, name, damage, type, elementType, packageId, userId);
     }
     
 }

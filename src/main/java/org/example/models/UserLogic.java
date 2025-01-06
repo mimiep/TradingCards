@@ -79,4 +79,37 @@ public class UserLogic {
             }
         }
     }
+
+    public User getUserByToken(String token) throws SQLException {
+        try (Connection connection = database.connect()) {
+            String query = "SELECT * FROM users WHERE token = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, token);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    return new User(
+                            UUID.fromString(rs.getString("id")),
+                            rs.getString("username"),
+                            rs.getString("password"),
+                            rs.getString("token"),
+                            rs.getInt("coins")
+                    );
+                }
+            }
+        }
+        return null; // Benutzer nicht gefunden
+    }
+
+    public void deductCoins(UUID userId, int amount) throws SQLException {
+        try (Connection connection = database.connect()) {
+            String query = "UPDATE users SET coins = coins - ? WHERE id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setInt(1, amount);
+                stmt.setObject(2, userId);
+                stmt.executeUpdate();
+            }
+        }
+    }
+
 }
