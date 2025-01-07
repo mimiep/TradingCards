@@ -49,6 +49,8 @@ public class RequestHandler implements Runnable {
                 handleUserLogin(in, out);
             } else if (firstLine.startsWith("PUT /deck")) {
                 handleAddCardToDeck(in, out);
+            } else if (firstLine.startsWith("GET /deck?format=plain")) {
+                handleGetDeck2(in, out);
             } else if (firstLine.startsWith("GET /deck")) {
                 handleGetDeck(in, out);
             } else if (firstLine.startsWith("POST /cards")) {
@@ -250,9 +252,10 @@ public class RequestHandler implements Runnable {
         String line;
         String token = null;
 
+        // Weiter mit den Headers, um das Token zu extrahieren
         while (!(line = in.readLine()).isEmpty()) {
             if (line.startsWith("Authorization:")) {
-                token = line.split(" ")[2].trim(); // Token aus dem Header extrahieren
+                token = line.split(" ")[2].trim();  // Token aus dem Header extrahieren
             }
         }
 
@@ -269,16 +272,58 @@ public class RequestHandler implements Runnable {
                 return;
             }
 
-            // Deck des Benutzers abrufen
             List<UUID> deck = deckLogic.getDeck(userId);
 
-            // Deck als JSON zurückgeben (leere Liste, wenn kein Deck vorhanden ist)
-            String responseBody = objectMapper.writeValueAsString(deck);
-            sendResponse(out, 200, "OK", responseBody);
+                String responseBody = objectMapper.writeValueAsString(deck);
+                sendResponse(out, 200, "OK", responseBody);
+
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
 
+    }
+
+    private void handleGetDeck2(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
+        String line;
+        String token = null;
+        String format = "json";
+        line = in.readLine();
+
+        System.out.println("PLAIN ERKANNT");
+
+        // Weiter mit den Headers, um das Token zu extrahieren
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Authorization:")) {
+                token = line.split(" ")[2].trim();  // Token aus dem Header extrahieren
+            }
+        }
+
+        if (token == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            return;
+        }
+
+        try {
+            // Benutzer-ID basierend auf dem Token abrufen
+            UUID userId = userLogic.getUserIdFromToken(token);
+            if (userId == null) {
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}");
+                return;
+            }
+
+            List<UUID> deck = deckLogic.getDeck(userId);
+
+                // Alternative Darstellung im Klartext
+                StringBuilder plainTextDeck = new StringBuilder();
+                plainTextDeck.append("User's Deck:\n");
+                for (UUID cardId : deck) {
+                    plainTextDeck.append("- ").append(cardId.toString()).append("\n");
+                }
+                sendResponse(out, 200, "OK", plainTextDeck.toString());
+
+        } catch (SQLException e) {
+            sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+        }
 
     }
 
