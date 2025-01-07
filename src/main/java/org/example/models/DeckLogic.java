@@ -25,6 +25,25 @@ public class DeckLogic {
         }
     }
 
+    public boolean hasDeck(UUID userId) throws SQLException {
+        // Verbindung zur Datenbank herstellen
+        try (Connection connection = database.connect()) {
+            String query = "SELECT COUNT(*) FROM decks WHERE user_id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setObject(1, userId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        int count = rs.getInt(1);
+                        // Wenn die Anzahl der Karten im Deck größer als 0 ist, hat der Benutzer ein Deck
+                        return count > 0;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
 
     public List<UUID> getDeck(UUID userId) throws SQLException {
         List<UUID> deck = new ArrayList<>();
@@ -40,6 +59,41 @@ public class DeckLogic {
             }
         }
         return deck;
+    }
+
+    public List<Card> getCardsFromDeck(UUID userId) throws SQLException {
+        List<Card> cards = new ArrayList<>();
+        // Zuerst die UUIDs der Karten des Benutzers bekommen
+        List<UUID> cardIds = getDeck(userId); // Hier verwenden wir die getDeck-Methode, um die UUIDs zu holen
+
+        try (Connection connection = database.connect()) {
+            // Jetzt holen wir die Kartendetails aus der Datenbank
+            for (UUID cardId : cardIds) {
+                String query = "SELECT * FROM cards WHERE card_id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                    stmt.setObject(1, cardId);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) {
+                            String name = rs.getString("name");
+                            int damage = rs.getInt("damage");
+                            String type = rs.getString("type");
+                            String elementType = rs.getString("element_type");
+                            UUID user_id = UUID.fromString(rs.getString("user_id"));
+
+                            // Dynamische Erstellung der Karte basierend auf dem Typ
+                            Card card;
+                            if ("Spell".equals(type)) {
+                                card = new SpellCard(cardId, name, damage, type, elementType, null , user_id);
+                            } else {
+                                card = new MonsterCard(cardId, name, damage, type, elementType, null , user_id);
+                            }
+                            cards.add(card);
+                        }
+                    }
+                }
+            }
+        }
+        return cards;
     }
 
 

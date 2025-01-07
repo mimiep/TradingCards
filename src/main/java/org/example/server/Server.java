@@ -17,6 +17,7 @@ public class Server {
     private final CardLogic cardLogic;
     private final PackageLogic packageLogic;
     private final ScoreboardLogic scoreboardLogic;
+    private final BattleLogic battleLogic;
 
     public Server(int port) {
         this.port = port;
@@ -26,6 +27,7 @@ public class Server {
         this.cardLogic = new CardLogic();
         this.packageLogic = new PackageLogic();
         this.scoreboardLogic = new ScoreboardLogic();
+        this.battleLogic = new BattleLogic();
 
     }
 
@@ -35,7 +37,7 @@ public class Server {
             while (true) {
                 Socket socket = serverSocket.accept();
                 //System.out.println("New client connected");
-                RequestHandler requestHandler = new RequestHandler(socket, userLogic, deckLogic, cardLogic, packageLogic, scoreboardLogic);
+                RequestHandler requestHandler = new RequestHandler(socket, userLogic, deckLogic, cardLogic, packageLogic, scoreboardLogic, battleLogic);
                 threadPool.execute(requestHandler); //Request mit Thread machen
             }
         } catch (IOException e) {

@@ -3,11 +3,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 DROP TABLE IF EXISTS decks;
 DROP TABLE IF EXISTS cards;
 DROP TABLE IF EXISTS packages;
+DROP TABLE IF EXISTS battles;
+DROP TABLE IF EXISTS scoreboard;
 DROP TABLE IF EXISTS users;
 
 
 CREATE TABLE packages (
-                       package_id UUID PRIMARY KEY DEFAULT uuid_generate_v4()
+                          package_id UUID PRIMARY KEY DEFAULT uuid_generate_v4()
 );
 
 
@@ -17,9 +19,9 @@ CREATE TABLE users (
                        password VARCHAR(255) NOT NULL,
                        token VARCHAR(255),
                        coins INT DEFAULT 20,
-                       name VARCHAR(100),
-                       bio TEXT,
-                       image TEXT
+                       name VARCHAR(100) DEFAULT NULL,
+                       bio TEXT DEFAULT NULL,
+                       image TEXT DEFAULT NULL
 );
 
 CREATE TABLE cards (
@@ -39,32 +41,25 @@ CREATE TABLE decks (
                        PRIMARY KEY (user_id, card_id)
 );
 
+CREATE TABLE scoreboard (
+                            user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                            elo INT DEFAULT 100
+);
+
+
+
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE users TO mtcg_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE decks TO mtcg_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE packages TO mtcg_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE cards TO mtcg_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE scoreboard TO mtcg_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE battles TO mtcg_user;
 
 
 
-/*
- CREATE TABLE battles (
-        battle_id UUID PRIMARY KEY DEFAULT uuid_generate_v4()
-        player1_id UUID NOT NULL,
-        player2_id UUID NOT NULL,
-        winner_id UUID,
-        battle_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (player1_id) REFERENCES users(user_id) ON DELETE CASCADE,
-        FOREIGN KEY (player2_id) REFERENCES users(user_id) ON DELETE CASCADE,
-        FOREIGN KEY (winner_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
 
- CREATE TABLE scoreboard (
-        user_id UUID PRIMARY KEY,
-        elo INT DEFAULT 100,
-        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
 
- */
 
 
 

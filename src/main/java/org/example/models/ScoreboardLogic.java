@@ -9,10 +9,11 @@ import java.util.UUID;
 
 public class ScoreboardLogic {
     private Database database;
-
+    private final UserLogic userLogic;
 
     public ScoreboardLogic() {
         this.database = new Database();
+        this.userLogic = new UserLogic();
     }
 
 
@@ -60,5 +61,23 @@ public class ScoreboardLogic {
                 insertScoreboardStmt.executeUpdate();
             }
         }
+    }
+
+    public void updateElo(User winner, User loser, boolean hasWinner) throws SQLException {
+        UUID userid1 = winner.getUserId();
+        UUID userid2 = loser.getUserId();
+
+        int winnerElo = userLogic.getElo(userid1);
+        int loserElo = userLogic.getElo(userid2);
+
+        if (hasWinner) {
+            winnerElo += 10;
+            loserElo -= 10;
+        }
+
+        System.out.println("ELO WIRD AUSGEBESSTER");
+        userLogic.setElo(winnerElo,userid1);
+        userLogic.setElo(loserElo,userid2);
+
     }
 }

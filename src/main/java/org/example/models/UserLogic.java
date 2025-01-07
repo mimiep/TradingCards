@@ -205,4 +205,33 @@ public class UserLogic {
         }
         return null; // Benutzer nicht gefunden
     }
+
+    public int getElo(UUID userId) throws SQLException {
+        int elo = 0;
+        try (Connection connection = database.connect()) {
+            PreparedStatement stmt = connection.prepareStatement("SELECT elo FROM scoreboard WHERE user_id = ?");
+            stmt.setObject(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                elo = rs.getInt("elo");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return elo;
+    }
+
+    public void setElo(int elo, UUID userId) {
+        try (Connection connection = database.connect()) {
+            PreparedStatement stmt = connection.prepareStatement("UPDATE scoreboard SET elo = ? WHERE user_id = ?");
+            stmt.setInt(1, elo);
+            stmt.setObject(2, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 }

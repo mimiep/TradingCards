@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.example.models.*;
-import org.example.models.Package;
+
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -26,15 +26,17 @@ public class RequestHandler implements Runnable {
     private final CardLogic cardLogic;
     private final PackageLogic packageLogic;
     private final ScoreboardLogic scoreboardLogic;
+    private final BattleLogic battleLogic;
     private final ObjectMapper objectMapper;
 
-    public RequestHandler(Socket socket, UserLogic userLogic, DeckLogic deckLogic, CardLogic cardLogic, PackageLogic packageLogic, ScoreboardLogic scoreboardLogic) {
+    public RequestHandler(Socket socket, UserLogic userLogic, DeckLogic deckLogic, CardLogic cardLogic, PackageLogic packageLogic, ScoreboardLogic scoreboardLogic, BattleLogic battleLogic) {
         this.socket = socket;
         this.userLogic = userLogic;
         this.deckLogic = deckLogic;
         this.cardLogic = cardLogic;
         this.packageLogic = packageLogic;
         this.scoreboardLogic = scoreboardLogic;
+        this.battleLogic = battleLogic;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -74,7 +76,9 @@ public class RequestHandler implements Runnable {
                 handleStats(in, out);
             } else if (firstLine.startsWith("GET /scoreboard")) {
                 handleScoreboard(in, out);
-            } else {    //praktisch fürs CURL, er lässt somit die anderen Test noch nicht durch
+            } else if (firstLine.startsWith("POST /battles")) {
+                handleBattle(in, out);
+            } else {    //falls ein Fehler auftritt und er die Methode nicht erkennt
                 sendResponse(out, 405, "Method Not Allowed", "Methode nicht erlaubt.");
             }
 
@@ -563,10 +567,8 @@ public class RequestHandler implements Runnable {
                 String type;
                 if (name.contains("Spell")) {
                     type = "Spell";
-                } else if (name.contains("Monster")) {
-                    type = "Monster";
                 } else {
-                    type = "Normal"; // Weder Spell noch Monster
+                    type = "Monster";
                 }
 
                 String elementType;
@@ -729,6 +731,40 @@ public class RequestHandler implements Runnable {
         }
     }
 
+    private void handleBattle(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
+        String line;
+        String authToken = null;
+
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Authorization:")) {
+                authToken = line.split(" ")[2].trim();
+            }
+        }
+
+        if (authToken == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            return;
+        }
+
+        User user = userLogic.getUserByToken(authToken);
+
+            battleLogic.addPlayer(user);
+            System.out.println("********PLAYER ADDED***********");
+
+            if (battleLogic.getPlayers() > 2){
+                sendResponse(out, 200, "OK", "{\"message\":\"Already enough players.\"}");
+
+            }
+            else if(battleLogic.getPlayers() < 2){
+                sendResponse(out, 200, "OK", "{\"message\":\"Player joined.\"}");
+            }
+
+            else {
+                battleLogic.startBattle();
+                sendResponse(out, 201, "OK", "{\"message\":\"Battle finished.\"}");
+            }
+
+    }
 
 
 
