@@ -19,19 +19,24 @@ public class PackageLogic {
         this.cardLogic = new CardLogic();
     }
 
-    public UUID createPackage() throws SQLException {
-        UUID packageId = UUID.randomUUID();
-        try (Connection connection = database.connect()) {
-            String insertPackageQuery = "INSERT INTO packages (package_id) VALUES (?)";
-            try (PreparedStatement stmt = connection.prepareStatement(insertPackageQuery)) {
-                stmt.setObject(1, packageId);
+    public void deletePackageById(UUID packageId) throws SQLException {
+        try (Connection connection = database.connect()) { // Verbindung herstellen
+            String updatePackageSQL = "UPDATE cards SET package_id = NULL WHERE package_id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(updatePackageSQL)) {
+                stmt.setObject(1, packageId, java.sql.Types.OTHER); // PostgreSQL erwartet java.sql.Types.OTHER für UUID
                 int rowsAffected = stmt.executeUpdate();
-                if (rowsAffected == 0) {
-                    throw new SQLException("Failed to insert package");
-                }
             }
+            System.out.println("GEUPDATED CARDS");
+            String deletePackageSQL = "DELETE FROM packages WHERE package_id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(deletePackageSQL)) {
+                stmt.setObject(1, packageId, java.sql.Types.OTHER); // PostgreSQL erwartet java.sql.Types.OTHER für UUID
+                int rowsAffected = stmt.executeUpdate();
+            }
+            System.out.println("DELETED AUS PACKAGES");
+        } catch (SQLException e) {
+            throw new SQLException("Error while deleting package with ID: " + packageId, e);
         }
-        return packageId;
+
     }
 
     public UUID createPackageList(List<Card> cards) throws SQLException {
@@ -84,11 +89,12 @@ public class PackageLogic {
             // Wenn der Benutzer nicht genug Coins hat, rollback durchführen und false zurückgeben
             if (userCoins < 5) {
                 connection.rollback();
+                System.out.println("GENUG COINS");
                 return false;
             }
 
             // Ein Paket finden, das 5 Karten enthält, die noch keinem Benutzer zugeordnet sind
-            String selectPackageQuery = "SELECT package_id FROM cards WHERE user_id IS NULL GROUP BY package_id HAVING COUNT(*) = 5 LIMIT 1";
+            String selectPackageQuery = "SELECT package_id FROM packages LIMIT 1";
             UUID packageId = null;
 
             try (PreparedStatement stmt = connection.prepareStatement(selectPackageQuery)) {
@@ -103,7 +109,10 @@ public class PackageLogic {
                 return false;
             }
 
+
             // Karten des Pakets dem Benutzer zuweisen
+            System.out.println("CARDS USER ZUWEISEN");
+
             String updateCardsQuery = "UPDATE cards SET user_id = ? WHERE package_id = ? AND user_id IS NULL";
             try (PreparedStatement stmt = connection.prepareStatement(updateCardsQuery)) {
                 stmt.setObject(1, userId);
@@ -111,8 +120,10 @@ public class PackageLogic {
                 stmt.executeUpdate();
             }
 
+
             // Transaktion abschließen
             connection.commit();
+            deletePackageById(packageId);
             return true;
 
         } catch (SQLException e) {

@@ -47,7 +47,7 @@ public class RequestHandler implements Runnable {
                 handleUserRegistration(in, out);
             } else if (firstLine.startsWith("POST /sessions")) {
                 handleUserLogin(in, out);
-            } else if (firstLine.startsWith("POST /decks")) {
+            } else if (firstLine.startsWith("PUT /deck")) {
                 handleAddCardToDeck(in, out);
             } else if (firstLine.startsWith("GET /deck")) {
                 handleGetDeck(in, out);
@@ -57,7 +57,6 @@ public class RequestHandler implements Runnable {
                 handleGetCardsByUser(firstLine,in, out);
             } else if (firstLine.startsWith("POST /transactions/packages")) {
                 handleTransactionPackage(in, out);
-                sendResponse(out, 405, "Derzeitige Fehlerbehebung", "Derzeitige Fehlerbehebung");
             } else if (firstLine.startsWith("POST /packages")) {
                 handleCreatePackage(in, out);
             }
@@ -157,32 +156,93 @@ public class RequestHandler implements Runnable {
 
     private void handleAddCardToDeck(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         StringBuilder requestBody = new StringBuilder();
+        String token = null;
         String line;
         int contentLength = 0;
 
-        // Header lesen, um Content-Length zu bestimmen
+        // Header lesen, um Token und Content-Length zu extrahieren
         while (!(line = in.readLine()).isEmpty()) {
-            if (line.startsWith("Content-Length:")) {
+            if (line.startsWith("Authorization:")) {
+                token = line.split(" ")[2].trim(); // Token extrahieren
+            } else if (line.startsWith("Content-Length:")) {
                 contentLength = Integer.parseInt(line.split(":")[1].trim());
             }
         }
 
-        // Den Body lesen
+        // Kein Token vorhanden
+        if (token == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            return;
+        }
+
+        //Body einlesen
         if (contentLength > 0) {
             char[] bodyChars = new char[contentLength];
             in.read(bodyChars, 0, contentLength);
             requestBody.append(bodyChars);
         }
 
-        // JSON in Deck-Objekt umwandeln
-        Deck deck = objectMapper.readValue(requestBody.toString(), Deck.class);
-
-        // Karte zum Deck hinzufügen
         try {
-            deckLogic.addCardToDeck(deck.getUserId(), deck.getCardId());
-            sendResponse(out, 201, "Created", "{\"message\":\"Card added to deck successfully.\"}");
+            // Karten-IDs aus JSON-Body parsen
+            List<String> cardIdStrings = objectMapper.readValue(requestBody.toString(), List.class);
+
+            System.out.println("STRINGS:" + cardIdStrings);
+
+            List<UUID> cardIds = new ArrayList<>();
+            for (String id : cardIdStrings) {
+                cardIds.add(UUID.fromString(id));
+            }
+
+            System.out.println("UUID:" + cardIds);
+
+            // Validieren: Genau 4 Karten erforderlich
+            if (cardIds.size() != 4) {
+                sendResponse(out, 400, "Bad Request", "{\"message\":\"Genau 4 Karten erforderlich.\"}");
+                return;
+            }
+
+            // Benutzer-ID anhand des Tokens abrufen
+            UUID userId = userLogic.getUserIdFromToken(token);
+
+            System.out.println("USER ID:" + userId);
+
+
+
+            if (userId == null) {
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}");
+                return;
+            }
+
+            // Prüfen, ob der Benutzer bereits ein Deck hat
+            List<UUID> existingDeck = deckLogic.getDeck(userId);
+
+            if (!existingDeck.isEmpty()) {
+                sendResponse(out, 400, "Bad Request", "{\"message\":\"Ein Deck ist bereits konfiguriert.\"}");
+                return;
+            }
+
+
+            for (UUID cardId : cardIds) {
+                boolean belongsToUser = cardLogic.belongToUser(userId, cardId);  // Verwende die neue belongToUser Methode
+                if (!belongsToUser) {
+                    sendResponse(out, 403, "Forbidden", "{\"message\":\"Eine oder mehrere Karten gehören nicht zum Benutzer.\"}");
+                    return;
+                }
+            }
+
+            // Karten zum Deck hinzufügen
+            for (UUID cardId : cardIds) {
+                deckLogic.addCardToDeck(userId, cardId);
+            }
+
+            // Erfolgsmeldung senden
+            sendResponse(out, 200, "OK", "{\"message\":\"Deck erfolgreich konfiguriert.\"}");
+        } catch (IllegalArgumentException e) {
+            sendResponse(out, 400, "Bad Request", "{\"message\":\"Ungültiger Karten-UUID im Body.\"}");
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            sendResponse(out, 400, "Bad Request", "{\"message\":\"Ungültiger JSON-Body.\"}");
         }
     }
 

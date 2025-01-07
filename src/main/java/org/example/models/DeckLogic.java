@@ -25,6 +25,7 @@ public class DeckLogic {
         }
     }
 
+
     public List<UUID> getDeck(UUID userId) throws SQLException {
         List<UUID> deck = new ArrayList<>();
         try (Connection connection = database.connect()) {
