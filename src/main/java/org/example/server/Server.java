@@ -1,10 +1,6 @@
 package org.example.server;
 
-import org.example.models.UserLogic;
-import org.example.models.CardLogic;
-import org.example.models.PackageLogic;
-import org.example.models.DeckLogic;
-
+import org.example.models.*;
 
 
 import java.io.IOException;
@@ -18,16 +14,19 @@ public class Server {
     private final ExecutorService threadPool;
     private final UserLogic userLogic; // UserLogic hinzufügen
     private final DeckLogic deckLogic;
-    private final PackageLogic packageLogic;
     private final CardLogic cardLogic;
+    private final PackageLogic packageLogic;
+    private final ScoreboardLogic scoreboardLogic;
 
     public Server(int port) {
         this.port = port;
         this.threadPool = Executors.newFixedThreadPool(10); // Pool mit 10 Threads für mehrere Abfragen
         this.userLogic = new UserLogic();
         this.deckLogic = new DeckLogic();
-        this.packageLogic = new PackageLogic();
         this.cardLogic = new CardLogic();
+        this.packageLogic = new PackageLogic();
+        this.scoreboardLogic = new ScoreboardLogic();
+
     }
 
     public void start() {
@@ -36,7 +35,7 @@ public class Server {
             while (true) {
                 Socket socket = serverSocket.accept();
                 //System.out.println("New client connected");
-                RequestHandler requestHandler = new RequestHandler(socket, userLogic, deckLogic, cardLogic, packageLogic);
+                RequestHandler requestHandler = new RequestHandler(socket, userLogic, deckLogic, cardLogic, packageLogic, scoreboardLogic);
                 threadPool.execute(requestHandler); //Request mit Thread machen
             }
         } catch (IOException e) {

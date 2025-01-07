@@ -25,14 +25,16 @@ public class RequestHandler implements Runnable {
     private final DeckLogic deckLogic;
     private final CardLogic cardLogic;
     private final PackageLogic packageLogic;
+    private final ScoreboardLogic scoreboardLogic;
     private final ObjectMapper objectMapper;
 
-    public RequestHandler(Socket socket, UserLogic userLogic, DeckLogic deckLogic, CardLogic cardLogic, PackageLogic packageLogic) {
+    public RequestHandler(Socket socket, UserLogic userLogic, DeckLogic deckLogic, CardLogic cardLogic, PackageLogic packageLogic, ScoreboardLogic scoreboardLogic) {
         this.socket = socket;
         this.userLogic = userLogic;
         this.deckLogic = deckLogic;
         this.cardLogic = cardLogic;
         this.packageLogic = packageLogic;
+        this.scoreboardLogic = scoreboardLogic;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -64,13 +66,15 @@ public class RequestHandler implements Runnable {
                 handleCreateCard(in, out);
             } else if (firstLine.startsWith("GET /cards")) {
                 handleGetCardsByUser(firstLine,in, out);
-            } else if (firstLine.startsWith("POST /transactions/packages")) {
-                handleTransactionPackage(in, out);
             } else if (firstLine.startsWith("POST /packages")) {
                 handleCreatePackage(in, out);
-            }
-            //Zuvor
-            else {    //praktisch fürs CURL, er lässt somit die anderen Test noch nicht durch
+            } else if (firstLine.startsWith("POST /transactions/packages")) {
+                handleTransactionPackage(in, out);
+            } else if (firstLine.startsWith("GET /stats")) {
+                handleStats(in, out);
+            } else if (firstLine.startsWith("GET /scoreboard")) {
+                handleScoreboard(in, out);
+            } else {    //praktisch fürs CURL, er lässt somit die anderen Test noch nicht durch
                 sendResponse(out, 405, "Method Not Allowed", "Methode nicht erlaubt.");
             }
 
@@ -111,7 +115,15 @@ public class RequestHandler implements Runnable {
         // Benutzer registrieren
         try {
             boolean registrationSuccessful = userLogic.registerUser(user.getUsername(), user.getPassword());
+
+
+
             if (registrationSuccessful) {
+                UUID userId = userLogic.getUserIdByUsername(user.getUsername()); // Hier müsstest du eine Methode haben, die die User-ID anhand des Usernamens zurückgibt
+
+                // Füge den neuen Benutzer ins Scoreboard ein
+                scoreboardLogic.insertUserScoreboard(userId);
+
                 sendResponse(out, 201, "Created", "{\"message\":\"User registered successfully.\"}");
             } else {
                 sendResponse(out, 409, "Conflict", "{\"message\":\"User already exists.\"}");
@@ -654,6 +666,70 @@ public class RequestHandler implements Runnable {
         }
 
     }
+
+    private void handleStats(BufferedReader in, BufferedWriter out) throws IOException {
+        String line;
+        String token = null;
+
+
+        // Token extrahieren
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Authorization:")) {
+                token = line.split(" ")[2].trim();  // Token aus dem Header extrahieren
+            }
+        }
+
+        if (token == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid or missing token.\"}");
+            return;
+        }
+
+        try {
+            System.out.println("TOKEN"+ token);
+            UUID userId = userLogic.getUserIdFromToken(token);
+            System.out.println("USERID"+ userId);
+            if (userId == null) {
+                sendResponse(out, 403, "Forbidden", "{\"message\":\"User not authorized.\"}");
+                return;
+            }
+
+            // Benutzerstatistik abrufen
+            int elo = scoreboardLogic.getUserElo(userId);
+            System.out.println("ELO"+ elo);
+
+            sendResponse(out, 200, "OK", "{\"elo\":" + elo + "}");
+        } catch (SQLException e) {
+            sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleScoreboard(BufferedReader in, BufferedWriter out) throws IOException {
+        String line;
+        String authToken = null;
+
+        // Token extrahieren
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Authorization:")) {
+                authToken = line.split(" ")[2].trim();
+            }
+        }
+
+        if (authToken == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            return;
+        }
+
+        try {
+            // Scoreboard abrufen
+            List<ScoreboardEntry> scoreboard = scoreboardLogic.getScoreboard();
+            String responseBody = objectMapper.writeValueAsString(scoreboard);
+            sendResponse(out, 200, "OK", responseBody);
+        } catch (SQLException e) {
+            sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+        }
+    }
+
+
 
 
     // HTTP-Response senden

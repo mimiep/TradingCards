@@ -18,6 +18,7 @@ public class UserLogic {
 
     // Benutzer registrieren
     public boolean registerUser(String username, String password) throws SQLException {
+        String token;
         try (Connection connection = database.connect()) {
 
             // Neuen Benutzer in die Datenbank einfügen
@@ -29,7 +30,9 @@ public class UserLogic {
                 return true; // Registrierung erfolgreich
             }
         }
+
     }
+
 
     // Benutzer einloggen und Token generieren
     public String loginUser(String username, String password) throws SQLException {
@@ -186,5 +189,20 @@ public class UserLogic {
             e.printStackTrace();
             return null; // Fehlerbehandlung bei der DB-Abfrage
         }
+    }
+
+    public UUID getUserIdByUsername(String username) throws SQLException {
+        try (Connection connection = database.connect()) {
+            String query = "SELECT id FROM users WHERE username = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, username);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    return UUID.fromString(rs.getString("id"));
+                }
+            }
+        }
+        return null; // Benutzer nicht gefunden
     }
 }
