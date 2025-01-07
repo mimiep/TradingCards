@@ -93,7 +93,10 @@ public class UserLogic {
                             rs.getString("username"),
                             rs.getString("password"),
                             rs.getString("token"),
-                            rs.getInt("coins")
+                            rs.getInt("coins"),
+                            rs.getString("name"),
+                            rs.getString("bio"),
+                            rs.getString("image")
                     );
                 }
             }
@@ -103,7 +106,7 @@ public class UserLogic {
 
     public UUID getUserIdFromToken(String token) throws SQLException {
         try (Connection connection = database.connect()) {
-            String query = "SELECT * FROM users WHERE token = ?";
+            String query = "SELECT id FROM users WHERE token = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, token);
                 ResultSet rs = stmt.executeQuery();
@@ -127,4 +130,61 @@ public class UserLogic {
         }
     }
 
+    public boolean updateUser(String username, String name, String bio, String image) throws SQLException {
+        try (Connection connection = database.connect()) {
+            String query = "UPDATE users SET name = ?, bio = ?, image = ? WHERE username = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, name);
+                stmt.setString(2, bio);
+                stmt.setString(3, image);
+                stmt.setString(4, username);
+                return stmt.executeUpdate() > 0;
+            }
+        }
+    }
+
+    public User getUserByUsername(String username) throws SQLException {
+        try (Connection connection = database.connect()) {
+            String query = "SELECT * FROM users WHERE username = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, username);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new User(
+                                UUID.fromString(rs.getString("id")),
+                                rs.getString("username"),
+                                rs.getString("password"),
+                                rs.getString("token"),
+                                rs.getInt("coins"),
+                                rs.getString("name"),
+                                rs.getString("bio"),
+                                rs.getString("image")
+                        );
+                    } else {
+                        return null; // Benutzer nicht gefunden
+                    }
+                }
+            }
+        }
+    }
+
+
+    public String getUsernameFromId(UUID userId) {
+        try (Connection connection = database.connect()) {
+            String query = "SELECT username FROM users WHERE id = ?"; // UUID direkt vergleichen
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setObject(1, userId); // UUID als Parameter übergeben
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getString("username");
+                    } else {
+                        return null; // Benutzer nicht gefunden
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null; // Fehlerbehandlung bei der DB-Abfrage
+        }
+    }
 }

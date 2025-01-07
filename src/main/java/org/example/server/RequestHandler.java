@@ -1,5 +1,6 @@
 package org.example.server;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.example.models.*;
@@ -47,6 +48,12 @@ public class RequestHandler implements Runnable {
                 handleUserRegistration(in, out);
             } else if (firstLine.startsWith("POST /sessions")) {
                 handleUserLogin(in, out);
+            } else if (firstLine.startsWith("PUT /users")) {
+                String username = firstLine.split("/")[2].split(" ")[0];
+                handleUpdateUser(in, out, username);
+            } else if (firstLine.startsWith("GET /users")) {
+                String username = firstLine.split("/")[2].split(" ")[0];
+                handleGetUser(in, out, username);
             } else if (firstLine.startsWith("PUT /deck")) {
                 handleAddCardToDeck(in, out);
             } else if (firstLine.startsWith("GET /deck?format=plain")) {
@@ -155,6 +162,103 @@ public class RequestHandler implements Runnable {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
     }
+
+    private void handleGetUser(BufferedReader in, BufferedWriter out, String username) throws IOException {
+        String token = null;
+        String line;
+
+        // Token extrahieren
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Authorization:")) {
+                token = line.split(" ")[2].trim();  // Token aus dem Header extrahieren
+            }
+        }
+
+        if (token == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            return;
+        }
+
+
+
+        try {
+            if (!token.equals(userLogic.generateToken(username))) {
+                System.out.println("TOKEN passt nicht weil"+token+ "UNGLEICH "+ username);
+                sendResponse(out, 403, "Forbidden", "{\"message\":\"No Authorization for that user\"}");
+                return;
+            }
+            // Benutzerinformationen abrufen
+            User user = userLogic.getUserByUsername(username);
+            if (user == null) {
+                sendResponse(out, 404, "Not Found", "{\"message\":\"User not found.\"}");
+                return;
+            }
+
+            // Benutzerdaten im JSON-Format zurückgeben
+            String responseBody = objectMapper.writeValueAsString(user);
+            sendResponse(out, 200, "OK", responseBody);
+        } catch (SQLException e) {
+            sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void handleUpdateUser(BufferedReader in, BufferedWriter out, String username) throws IOException {
+        StringBuilder requestBody = new StringBuilder();
+        String line;
+        String token = null;
+        int contentLength = 0;
+
+        // Header lesen, um Content-Length und Authorization-Token zu bestimmen
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Authorization:")) {
+                token = line.split(" ")[2].trim();
+            } else if (line.startsWith("Content-Length:")) {
+                contentLength = Integer.parseInt(line.split(":")[1].trim());
+            }
+        }
+
+        // Den Body lesen
+        if (contentLength > 0) {
+            char[] bodyChars = new char[contentLength];
+            in.read(bodyChars, 0, contentLength);
+            requestBody.append(bodyChars);
+        }
+
+        if (token == null) {
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            return;
+        }
+
+        try {
+            // Benutzer-ID aus Token extrahieren
+            UUID userId = userLogic.getUserIdFromToken(token);
+
+            if (userId == null || !username.equals(userLogic.getUsernameFromId(userId))) {
+                sendResponse(out, 403, "Forbidden", "{\"message\":\"You are not authorized to edit this user's data.\"}");
+                return;
+            }
+
+            // JSON-Body analysieren
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode requestData = objectMapper.readTree(requestBody.toString());
+            String name = requestData.has("Name") ? requestData.get("Name").asText() : null;
+            String bio = requestData.has("Bio") ? requestData.get("Bio").asText() : null;
+            String image = requestData.has("Image") ? requestData.get("Image").asText() : null;
+
+            // Benutzerdaten aktualisieren
+            boolean success = userLogic.updateUser(username, name, bio, image);
+            if (success) {
+                sendResponse(out, 200, "OK", "{\"message\":\"User updated successfully.\"}");
+            } else {
+                sendResponse(out, 400, "Bad Request", "{\"message\":\"Error updating user.\"}");
+            }
+        } catch (SQLException e) {
+            sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
+        }
+    }
+
+
+
 
     private void handleAddCardToDeck(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         StringBuilder requestBody = new StringBuilder();
