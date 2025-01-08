@@ -49,7 +49,7 @@ public class BattleLogic {
         StringBuilder battleLog = new StringBuilder("Battle Log:\n");
         int rounds = 0;
 
-        while (!deck1.isEmpty() && !deck2.isEmpty() && rounds < 5) {
+        while (!deck1.isEmpty() && !deck2.isEmpty() && rounds < 13) { //da gehört eigentlih 100 hin, aber das ist hässlich zu lesen
             rounds++;
             battleLog.append("Round ").append(rounds).append(":\n");
 
@@ -79,22 +79,30 @@ public class BattleLogic {
             battleLog.append("\n");
         }
 
-        //PROBLEM, da die Cards nicht gelöscht werden
+        //der mit den meisten Karten am Ende gewinnst bzw. der der keine Karten mehr hat verliert
         String winner;
-        if (deck1.isEmpty()) {
+        if (deck2.size()> deck1.size()) {
             winner = player2.getUsername();
             scoreboardLogic.updateElo(player2, player1, true);
+        } else if (deck1.size()> deck2.size()) {
+            winner = player1.getUsername();
+            scoreboardLogic.updateElo(player1, player2, true);
         } else if (deck2.isEmpty()) {
             winner = player1.getUsername();
             scoreboardLogic.updateElo(player1, player2, true);
+        } else if (deck1.isEmpty()) {
+            winner = player2.getUsername();
+            scoreboardLogic.updateElo(player2, player1, true);
         } else {
             winner = "No one (draw)";
-            System.out.println("DECK IST NOCH VOLL WEIL NICHT GELÖSCHT WIRD");
             scoreboardLogic.updateElo(player1, player2, false);
         }
 
         battleLog.append("Battle finished after ").append(rounds).append(" rounds. Winner: ").append(winner).append("\n");
         System.out.println(battleLog.toString());
+
+        battleLog.setLength(0); //entleeren
+
     }
 
     private int calculateDamage(Card attacker, Card defender) {
@@ -142,8 +150,4 @@ public class BattleLogic {
 
         return (int) (attacker.getDamage() * multiplier);
     }
-
-
-
-
 }

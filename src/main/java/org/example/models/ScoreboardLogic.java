@@ -73,11 +73,10 @@ public class ScoreboardLogic {
         if (hasWinner) {
             winnerElo += 10;
             loserElo -= 10;
+
+            System.out.println("ELO WIRD AUSGEBESSTER");
+            userLogic.setElo(winnerElo,userid1);
+            userLogic.setElo(loserElo,userid2);
         }
-
-        System.out.println("ELO WIRD AUSGEBESSTER");
-        userLogic.setElo(winnerElo,userid1);
-        userLogic.setElo(loserElo,userid2);
-
     }
 }

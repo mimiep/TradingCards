@@ -79,7 +79,7 @@ public class RequestHandler implements Runnable {
             } else if (firstLine.startsWith("POST /battles")) {
                 handleBattle(in, out);
             } else {    //falls ein Fehler auftritt und er die Methode nicht erkennt
-                sendResponse(out, 405, "Method Not Allowed", "Methode nicht erlaubt.");
+                sendResponse(out, 405, "Method Not Allowed", "Methode nicht erlaubt." + "\r\n");
             }
 
         } catch (IOException | SQLException e) {
@@ -128,14 +128,14 @@ public class RequestHandler implements Runnable {
                 // Füge den neuen Benutzer ins Scoreboard ein
                 scoreboardLogic.insertUserScoreboard(userId);
 
-                sendResponse(out, 201, "Created", "{\"message\":\"User registered successfully.\"}");
+                sendResponse(out, 201, "Created", "{\"message\":\"User registered successfully.\"}"+ "\r\n");
             } else {
-                sendResponse(out, 409, "Conflict", "{\"message\":\"User already exists.\"}");
+                sendResponse(out, 409, "Conflict", "{\"message\":\"User already exists.\"}"+ "\r\n");
             }
         } catch (SQLException e) {
 
             if (e.getSQLState().equals("23505")) { // 23505 ist der SQL-State für Unique-Constraint-Verletzungen in PostgreSQL
-                sendResponse(out, 409, "Conflict", "{\"message\":\"User already exists.\"}");
+                sendResponse(out, 409, "Conflict", "{\"message\":\"User already exists.\"}"+ "\r\n");
             } else {
                 sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
             }
@@ -170,9 +170,9 @@ public class RequestHandler implements Runnable {
             String token = userLogic.loginUser(user.getUsername(), user.getPassword());
             if (token != null) {
                 String jsonResponse = "{\"token\":\"" + token + "\"}";
-                sendResponse(out, 200, "OK", jsonResponse);
+                sendResponse(out, 200, "OK", jsonResponse + "\r\n");
             } else {
-                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid login credentials.\"}");
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid login credentials.\"}"+ "\r\n");
             }
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
@@ -191,7 +191,7 @@ public class RequestHandler implements Runnable {
         }
 
         if (token == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}"+ "\r\n");
             return;
         }
 
@@ -200,19 +200,19 @@ public class RequestHandler implements Runnable {
         try {
             if (!token.equals(userLogic.generateToken(username))) {
                 System.out.println("TOKEN passt nicht weil"+token+ "UNGLEICH "+ username);
-                sendResponse(out, 403, "Forbidden", "{\"message\":\"No Authorization for that user\"}");
+                sendResponse(out, 403, "Forbidden", "{\"message\":\"No Authorization for that user\"}"+ "\r\n");
                 return;
             }
             // Benutzerinformationen abrufen
             User user = userLogic.getUserByUsername(username);
             if (user == null) {
-                sendResponse(out, 404, "Not Found", "{\"message\":\"User not found.\"}");
+                sendResponse(out, 404, "Not Found", "{\"message\":\"User not found.\"}"+ "\r\n");
                 return;
             }
 
             // Benutzerdaten im JSON-Format zurückgeben
             String responseBody = objectMapper.writeValueAsString(user);
-            sendResponse(out, 200, "OK", responseBody);
+            sendResponse(out, 200, "OK", responseBody + "\r\n");
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
@@ -241,7 +241,7 @@ public class RequestHandler implements Runnable {
         }
 
         if (token == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}"+ "\r\n");
             return;
         }
 
@@ -250,7 +250,7 @@ public class RequestHandler implements Runnable {
             UUID userId = userLogic.getUserIdFromToken(token);
 
             if (userId == null || !username.equals(userLogic.getUsernameFromId(userId))) {
-                sendResponse(out, 403, "Forbidden", "{\"message\":\"You are not authorized to edit this user's data.\"}");
+                sendResponse(out, 403, "Forbidden", "{\"message\":\"You are not authorized to edit this user's data.\"}"+ "\r\n");
                 return;
             }
 
@@ -264,9 +264,9 @@ public class RequestHandler implements Runnable {
             // Benutzerdaten aktualisieren
             boolean success = userLogic.updateUser(username, name, bio, image);
             if (success) {
-                sendResponse(out, 200, "OK", "{\"message\":\"User updated successfully.\"}");
+                sendResponse(out, 200, "OK", "{\"message\":\"User updated successfully.\"}"+ "\r\n");
             } else {
-                sendResponse(out, 400, "Bad Request", "{\"message\":\"Error updating user.\"}");
+                sendResponse(out, 400, "Bad Request", "{\"message\":\"Error updating user.\"}"+ "\r\n");
             }
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
@@ -293,7 +293,7 @@ public class RequestHandler implements Runnable {
 
         // Kein Token vorhanden
         if (token == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}"+ "\r\n");
             return;
         }
 
@@ -308,30 +308,23 @@ public class RequestHandler implements Runnable {
             // Karten-IDs aus JSON-Body parsen
             List<String> cardIdStrings = objectMapper.readValue(requestBody.toString(), List.class);
 
-            System.out.println("STRINGS:" + cardIdStrings);
-
             List<UUID> cardIds = new ArrayList<>();
             for (String id : cardIdStrings) {
                 cardIds.add(UUID.fromString(id));
             }
 
-            System.out.println("UUID:" + cardIds);
 
             // Validieren: Genau 4 Karten erforderlich
             if (cardIds.size() != 4) {
-                sendResponse(out, 400, "Bad Request", "{\"message\":\"Genau 4 Karten erforderlich.\"}");
+                sendResponse(out, 400, "Bad Request", "{\"message\":\"Genau 4 Karten erforderlich.\"}"+ "\r\n");
                 return;
             }
 
             // Benutzer-ID anhand des Tokens abrufen
             UUID userId = userLogic.getUserIdFromToken(token);
 
-            System.out.println("USER ID:" + userId);
-
-
-
             if (userId == null) {
-                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}");
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}"+ "\r\n");
                 return;
             }
 
@@ -339,7 +332,7 @@ public class RequestHandler implements Runnable {
             List<UUID> existingDeck = deckLogic.getDeck(userId);
 
             if (!existingDeck.isEmpty()) {
-                sendResponse(out, 400, "Bad Request", "{\"message\":\"Ein Deck ist bereits konfiguriert.\"}");
+                sendResponse(out, 400, "Bad Request", "{\"message\":\"Ein Deck ist bereits konfiguriert.\"}"+ "\r\n");
                 return;
             }
 
@@ -347,7 +340,7 @@ public class RequestHandler implements Runnable {
             for (UUID cardId : cardIds) {
                 boolean belongsToUser = cardLogic.belongToUser(userId, cardId);  // Verwende die neue belongToUser Methode
                 if (!belongsToUser) {
-                    sendResponse(out, 403, "Forbidden", "{\"message\":\"Eine oder mehrere Karten gehören nicht zum Benutzer.\"}");
+                    sendResponse(out, 403, "Forbidden", "{\"message\":\"Eine oder mehrere Karten gehören nicht zum Benutzer.\"}"+ "\r\n");
                     return;
                 }
             }
@@ -358,13 +351,13 @@ public class RequestHandler implements Runnable {
             }
 
             // Erfolgsmeldung senden
-            sendResponse(out, 200, "OK", "{\"message\":\"Deck erfolgreich konfiguriert.\"}");
+            sendResponse(out, 200, "OK", "{\"message\":\"Deck erfolgreich konfiguriert.\"}"+ "\r\n");
         } catch (IllegalArgumentException e) {
-            sendResponse(out, 400, "Bad Request", "{\"message\":\"Ungültiger Karten-UUID im Body.\"}");
+            sendResponse(out, 400, "Bad Request", "{\"message\":\"Ungültiger Karten-UUID im Body.\"}"+ "\r\n");
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         } catch (Exception e) {
-            sendResponse(out, 400, "Bad Request", "{\"message\":\"Ungültiger JSON-Body.\"}");
+            sendResponse(out, 400, "Bad Request", "{\"message\":\"Ungültiger JSON-Body.\"}"+ "\r\n");
         }
     }
 
@@ -380,7 +373,7 @@ public class RequestHandler implements Runnable {
         }
 
         if (token == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}"+ "\r\n");
             return;
         }
 
@@ -388,14 +381,14 @@ public class RequestHandler implements Runnable {
             // Benutzer-ID basierend auf dem Token abrufen
             UUID userId = userLogic.getUserIdFromToken(token);
             if (userId == null) {
-                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}");
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}"+ "\r\n");
                 return;
             }
 
             List<UUID> deck = deckLogic.getDeck(userId);
 
                 String responseBody = objectMapper.writeValueAsString(deck);
-                sendResponse(out, 200, "OK", responseBody);
+                sendResponse(out, 200, "OK", responseBody + "\r\n");
 
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
@@ -419,7 +412,7 @@ public class RequestHandler implements Runnable {
         }
 
         if (token == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}"+ "\r\n");
             return;
         }
 
@@ -427,7 +420,7 @@ public class RequestHandler implements Runnable {
             // Benutzer-ID basierend auf dem Token abrufen
             UUID userId = userLogic.getUserIdFromToken(token);
             if (userId == null) {
-                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}");
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Ungültiges Token.\"}"+ "\r\n");
                 return;
             }
 
@@ -472,7 +465,7 @@ public class RequestHandler implements Runnable {
         // Karte erstellen
         try {
             cardLogic.createCard(card.getCardId(), card.getName(), card.getDamage(), card.getType(), card.getElementType(), card.getPackageId(), card.getUserId());
-            sendResponse(out, 201, "Created", "{\"message\":\"Card created successfully.\"}");
+            sendResponse(out, 201, "Created", "{\"message\":\"Card created successfully.\"}" + "\r\n");
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
@@ -485,7 +478,7 @@ public class RequestHandler implements Runnable {
         int contentLength = 0;
 
         if (!firstLine.startsWith("GET")) {
-            sendResponse(out, 405, "Method Not Allowed", "GET erforderlich.");
+            sendResponse(out, 405, "Method Not Allowed", "{\"message\":\"GET necessary.\"} " + "\r\n");
             return;
         }
 
@@ -496,13 +489,13 @@ public class RequestHandler implements Runnable {
         }
 
         if (token == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"No token provided.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"No token provided.\"}"+ "\r\n");
             return;
         }
 
         UUID userId = userLogic.getUserIdFromToken(token);
         if (userId == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid token\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid token\"}"+ "\r\n");
             return;
         }
 
@@ -511,13 +504,13 @@ public class RequestHandler implements Runnable {
 
             // Wenn keine Karten gefunden werden
             if (cards.isEmpty()) {
-                sendResponse(out, 200, "OK", "{\"message\":\"No cards found\", \"cards\":[]}");
+                sendResponse(out, 200, "OK", "{\"message\":\"No cards found\", \"cards\":[]}"+ "\r\n");
                 return;
             }
 
             // Karten in JSON formatieren und zurückgeben
             String responseBody = objectMapper.writeValueAsString(cards);
-            sendResponse(out, 200, "OK", responseBody);
+            sendResponse(out, 200, "OK", responseBody + "\r\n");
 
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
@@ -544,16 +537,9 @@ public class RequestHandler implements Runnable {
             requestBody.append(bodyChars);
         }
 
-        System.out.println("Content-Length: " + contentLength);
-        System.out.println("Request Body: " + requestBody);
-
-        System.out.println("Fertig LOL");
-
         try {
 
             // Kartenliste aus dem JSON-Request extrahieren
-            //Problem
-            System.out.println("-----------------PROBIEREN DES ARRAYS----------------");
             List<Map<String, Object>> cardsList = objectMapper.readValue(requestBody.toString(), new TypeReference<List<Map<String, Object>>>() {
             });
 
@@ -605,12 +591,11 @@ public class RequestHandler implements Runnable {
 
             System.out.println(processedCards);
 
-
             // Paket erstellen und Karten speichern
             UUID packageId = packageLogic.createPackageList(processedCards);
 
             // Erfolgsmeldung zurückgeben
-            String jsonResponse = "{\"packageId\":\"" + packageId.toString() + "\"}";
+            String jsonResponse = "{\"packageId\":\"" + packageId.toString() + "} \r\n";
 
             sendResponse(out, 201, "Created", jsonResponse);
 
@@ -630,7 +615,7 @@ public class RequestHandler implements Runnable {
         }
 
         if (token == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"No token provided.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"No token provided.\"}" + "\r\n");
             return;
         }
 
@@ -639,12 +624,12 @@ public class RequestHandler implements Runnable {
             User user = userLogic.getUserByToken(token);
 
             if (user == null) {
-                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid token.\"}");
+                sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid token.\"}"+ "\r\n");
                 return;
             }
 
             if (user.getCoins() < 5) {
-                sendResponse(out, 403, "Forbidden", "{\"message\":\"Not enough coins.\"}");
+                sendResponse(out, 403, "Forbidden", "{\"message\":\"Not enough coins.\"}" + "\r\n");
                 return;
             }
 
@@ -653,7 +638,7 @@ public class RequestHandler implements Runnable {
             boolean success = packageLogic.acquirePackage(user.getUserId());
 
             if (!success) {
-                sendResponse(out, 404, "Not Found", "{\"message\":\"No packages available.\"}");
+                sendResponse(out, 404, "Not Found", "{\"message\":\"No packages available.\"}" + "\r\n");
                 return;
             }
 
@@ -661,7 +646,7 @@ public class RequestHandler implements Runnable {
             userLogic.deductCoins(user.getUserId(), 5);
 
             // Erfolgreiche Antwort senden
-            sendResponse(out, 201, "Created", "{\"message\":\"Package acquired successfully.\"}");
+            sendResponse(out, 201, "Created", "{\"message\":\"Package acquired successfully.\"}" + "\r\n");
 
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
@@ -682,7 +667,7 @@ public class RequestHandler implements Runnable {
         }
 
         if (token == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid or missing token.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Invalid or missing token.\"}"+ "\r\n");
             return;
         }
 
@@ -691,7 +676,7 @@ public class RequestHandler implements Runnable {
             UUID userId = userLogic.getUserIdFromToken(token);
             System.out.println("USERID"+ userId);
             if (userId == null) {
-                sendResponse(out, 403, "Forbidden", "{\"message\":\"User not authorized.\"}");
+                sendResponse(out, 403, "Forbidden", "{\"message\":\"User not authorized.\"}"+ "\r\n");
                 return;
             }
 
@@ -699,7 +684,7 @@ public class RequestHandler implements Runnable {
             int elo = scoreboardLogic.getUserElo(userId);
             System.out.println("ELO"+ elo);
 
-            sendResponse(out, 200, "OK", "{\"elo\":" + elo + "}");
+            sendResponse(out, 200, "OK", "{\"elo\":" + elo + "}" + "\r\n");
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
@@ -717,7 +702,7 @@ public class RequestHandler implements Runnable {
         }
 
         if (authToken == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}" + "\r\n");
             return;
         }
 
@@ -725,7 +710,7 @@ public class RequestHandler implements Runnable {
             // Scoreboard abrufen
             List<ScoreboardEntry> scoreboard = scoreboardLogic.getScoreboard();
             String responseBody = objectMapper.writeValueAsString(scoreboard);
-            sendResponse(out, 200, "OK", responseBody);
+            sendResponse(out, 200, "OK", responseBody + "\r\n");
         } catch (SQLException e) {
             sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
@@ -742,31 +727,28 @@ public class RequestHandler implements Runnable {
         }
 
         if (authToken == null) {
-            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}");
+            sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}" + "\r\n");
             return;
         }
 
         User user = userLogic.getUserByToken(authToken);
 
             battleLogic.addPlayer(user);
-            System.out.println("********PLAYER ADDED***********");
 
             if (battleLogic.getPlayers() > 2){
-                sendResponse(out, 200, "OK", "{\"message\":\"Already enough players.\"}");
+                sendResponse(out, 200, "OK", "{\"message\":\"Already enough players.\"}" + "\r\n");
 
             }
             else if(battleLogic.getPlayers() < 2){
-                sendResponse(out, 200, "OK", "{\"message\":\"Player joined.\"}");
+                sendResponse(out, 200, "OK", "{\"message\":\"Player joined.\"}"+ "\r\n");
             }
 
             else {
                 battleLogic.startBattle();
-                sendResponse(out, 201, "OK", "{\"message\":\"Battle finished.\"}");
             }
 
+        sendResponse(out, 201, "OK", "{\"message\":\"Battle finished.\"}"+ "\r\n");
     }
-
-
 
     // HTTP-Response senden
     private void sendResponse(BufferedWriter out, int statusCode, String statusMessage, String responseBody) throws IOException {
@@ -774,7 +756,7 @@ public class RequestHandler implements Runnable {
                 "Content-Type: application/json\r\n" +
                 "Content-Length: " + responseBody.length() + "\r\n" +
                 "\r\n" +
-                responseBody;
+                responseBody + "\r\n";
 
         out.write(response);
         out.flush();
