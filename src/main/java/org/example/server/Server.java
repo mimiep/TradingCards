@@ -1,6 +1,8 @@
 package org.example.server;
 
-import org.example.models.*;
+//import org.example.logic.*;
+import org.example.service.*;
+
 
 
 import java.io.IOException;
@@ -12,22 +14,24 @@ import java.util.concurrent.Executors;
 public class Server {
     private final int port;
     private final ExecutorService threadPool;
-    private final UserLogic userLogic; // UserLogic hinzufügen
-    private final DeckLogic deckLogic;
-    private final CardLogic cardLogic;
-    private final PackageLogic packageLogic;
-    private final ScoreboardLogic scoreboardLogic;
-    private final BattleLogic battleLogic;
+    private final UserService userService; // UserLogic hinzufügen
+    private final DeckService deckService;
+    private final CardService cardService;
+    private final PackageService packageService;
+    private final ScoreboardService scoreboardService;
+    private final BattleService battleService;
+    private final SendService sendService;
 
     public Server(int port) {
         this.port = port;
         this.threadPool = Executors.newFixedThreadPool(10); // Pool mit 10 Threads für mehrere Abfragen
-        this.userLogic = new UserLogic();
-        this.deckLogic = new DeckLogic();
-        this.cardLogic = new CardLogic();
-        this.packageLogic = new PackageLogic();
-        this.scoreboardLogic = new ScoreboardLogic();
-        this.battleLogic = new BattleLogic();
+        this.userService = new UserService();
+        this.deckService = new DeckService();
+        this.cardService = new CardService();
+        this.packageService = new PackageService();
+        this.scoreboardService = new ScoreboardService();
+        this.sendService = new SendService();
+        this.battleService = new BattleService();
 
     }
 
@@ -37,7 +41,7 @@ public class Server {
             while (true) {
                 Socket socket = serverSocket.accept();
                 //System.out.println("New client connected");
-                RequestHandler requestHandler = new RequestHandler(socket, userLogic, deckLogic, cardLogic, packageLogic, scoreboardLogic, battleLogic);
+                RequestHandler requestHandler = new RequestHandler(socket, userService, deckService, cardService, packageService, scoreboardService, battleService, sendService);
                 threadPool.execute(requestHandler); //Request mit Thread machen
             }
         } catch (IOException e) {
