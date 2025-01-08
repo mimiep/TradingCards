@@ -104,30 +104,33 @@ public class BattleLogic {
 
     }
 
-    private int calculateDamage(Card attacker, Card defender) {
+    public int calculateDamage(Card attacker, Card defender) {
         // Goblins vs Dragons
+
         if (attacker.getName().equalsIgnoreCase("Goblin") && defender.getName().equalsIgnoreCase("Dragon")) {
             return 0; // Goblins greifen keine Drachen an
         }
         // Wizzard vs Orks
-        if (attacker.getName().equalsIgnoreCase("Wizzard") && defender.getName().equalsIgnoreCase("Ork")) {
+        else if (attacker.getName().equalsIgnoreCase("Wizzard") && defender.getName().equalsIgnoreCase("Ork")) {
             return 0; // Orks greifen keine Wizzards an
         }
         // Knights vs WaterSpell
-        if (attacker.getName().equalsIgnoreCase("Knight") && defender.getType().equalsIgnoreCase("WaterSpell")) {
-            return Integer.MIN_VALUE; // Knights verlieren sofort gegen WaterSpell
+        else if (attacker.getName().equalsIgnoreCase("Knight") && defender.getName().equalsIgnoreCase("WaterSpell")) {
+            return (-100); // Knights verlieren sofort gegen WaterSpell
         }
         // Kraken vs Spells
-        if (attacker.getName().equalsIgnoreCase("Kraken") && defender.getType().contains("Spell")) {
-            return Integer.MAX_VALUE; // Kraken sind immun gegen Spells
+        else if (attacker.getName().equalsIgnoreCase("Kraken") && defender.getType().contains("Spell")) {
+            return 100; // Kraken sind immun gegen Spells
         }
         // FireElves vs Dragons
-        if (attacker.getName().equalsIgnoreCase("FireElf") && defender.getName().equalsIgnoreCase("Dragon")) {
+        else if (attacker.getName().equalsIgnoreCase("FireElf") && defender.getName().equalsIgnoreCase("Dragon")) {
             return 0; // FireElves weichen Drachen aus
         }
 
+
         // Berechnung der Effektivität
         double multiplier = 1.0;
+
         if (attacker.getType().contains("Spell") || defender.getType().contains("Spell")) {
             String attackerElement = attacker.getElementType();
             String defenderElement = defender.getElementType();
@@ -146,7 +149,7 @@ public class BattleLogic {
                 multiplier = 0.5; // Water <- Normal
             }
         }
-
         return (int) (attacker.getDamage() * multiplier);
     }
+
 }
