@@ -17,7 +17,6 @@ public class ServerTest {
             Thread serverThread = new Thread(() -> server.start());
             serverThread.start();
 
-            // Stop the thread gracefully after verifying server is listening
             serverThread.interrupt();
         }, "The server should start without throwing an exception.");
     }

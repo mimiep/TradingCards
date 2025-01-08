@@ -23,12 +23,10 @@ class DatabaseTest {
 
     @Test
     void testConnect_Failure() {
-        // Um diesen Test zu simulieren, könntest du vorübergehend ungültige Datenbankdetails in der Database-Klasse einstellen.
         Database faultyDatabase = new Database() {
             @Override
             public Connection connect() {
-                // Simuliert ein fehlerhaftes Verhalten
-                return null;
+                return null; //Simuliert Error
             }
         };
 

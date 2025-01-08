@@ -11,7 +11,6 @@ public class UserModelsTest {
 
     @Test
     void testUserConstructorAndGetters() {
-        // Erstelle ein User-Objekt
         UUID userId = UUID.randomUUID();
         String username = "TestUser";
         String password = "password123";
@@ -34,7 +33,6 @@ public class UserModelsTest {
         assertEquals(image, user.getImage(), "Image should match");
     }
 
-    // Test für das Setzen und Abrufen von Eigenschaften
     @Test
     void testSetters() {
         User user = new User();
@@ -59,7 +57,6 @@ public class UserModelsTest {
         assertEquals("new_image_url", user.getImage(), "Image should be 'new_image_url'");
     }
 
-    // Test für leere Benutzer-Instanz (keine Setzungen)
     @Test
     void testEmptyUser() {
         User user = new User();
@@ -74,12 +71,10 @@ public class UserModelsTest {
         assertNull(user.getImage(), "Image should be null");
     }
 
-    // Test für das Setzen von Coins und sicherstellen, dass der Wert geändert wird
     @Test
     void testSetCoins() {
         User user = new User();
 
-        // Setze Coins und überprüfe den Wert
         user.setCoins(200);
         assertEquals(200, user.getCoins(), "Coins should be 200");
 

@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.UUID;
 
-
+//Für Request, User betreffend zuständig
 public class UserService {
 
     private UserLogic userLogic;
@@ -29,7 +29,7 @@ public class UserService {
         this.objectMapper = new ObjectMapper();
     }
 
-    //Funktionen auslagern, weil jetzt ist es so überfüllt
+    //Teilen des Headers um zu wissen was zu tun, um dann User zu registieren
     public void handleUserRegistration(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         StringBuilder requestBody = new StringBuilder();
         String line;
@@ -56,8 +56,6 @@ public class UserService {
         try {
             boolean registrationSuccessful = userLogic.registerUser(user.getUsername(), user.getPassword());
 
-
-
             if (registrationSuccessful) {
                 UUID userId = userLogic.getUserIdByUsername(user.getUsername()); // Hier müsstest du eine Methode haben, die die User-ID anhand des Usernamens zurückgibt
 
@@ -79,6 +77,7 @@ public class UserService {
         }
     }
 
+    //Einloggen von Benutzer
     public void handleUserLogin(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         StringBuilder requestBody = new StringBuilder();
         String line;
@@ -115,6 +114,7 @@ public class UserService {
         }
     }
 
+    //Für Authentification ausführen, bevor User ausgegeben werden darf
     public void handleGetUser(BufferedReader in, BufferedWriter out, String username) throws IOException {
         String token = null;
         String line;
@@ -130,8 +130,6 @@ public class UserService {
             sendService.sendResponse(out, 401, "Unauthorized", "{\"message\":\"Authorization token fehlt.\"}"+ "\r\n");
             return;
         }
-
-
 
         try {
             if (!token.equals(userLogic.generateToken(username))) {
@@ -154,6 +152,7 @@ public class UserService {
         }
     }
 
+    //Muss für Authentification ausgeführt werden bevor man Dinge ändern kann
     public void handleUpdateUser(BufferedReader in, BufferedWriter out, String username) throws IOException {
         StringBuilder requestBody = new StringBuilder();
         String line;

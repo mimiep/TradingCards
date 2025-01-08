@@ -35,7 +35,7 @@ public class ScoreboardLogic {
         }
     }
 
-    // Gesamtes Scoreboard abrufen
+    // Gesamtes Scoreboard sortiert abrufen
     public List<ScoreboardEntry> getScoreboard() throws SQLException {
         try (Connection connection = database.connect()) {
             String query = "SELECT u.username, s.elo FROM scoreboard s JOIN users u ON s.user_id = u.id ORDER BY s.elo DESC";
@@ -53,18 +53,19 @@ public class ScoreboardLogic {
         }
     }
 
+    // Benutzer in die Scoreboard-Tabelle einfügen
     public void insertUserScoreboard(UUID userId) throws SQLException {
         try (Connection connection = database.connect()) {
-            // Benutzer in die Scoreboard-Tabelle einfügen
             String insertScoreboardQuery = "INSERT INTO scoreboard (user_id, elo) VALUES (?, ?)";
             try (PreparedStatement insertScoreboardStmt = connection.prepareStatement(insertScoreboardQuery)) {
-                insertScoreboardStmt.setObject(1, userId);  // user_id
-                insertScoreboardStmt.setInt(2, 100);  // Start-ELO-Wert
+                insertScoreboardStmt.setObject(1, userId);
+                insertScoreboardStmt.setInt(2, 100);  // Start ELO ist 100
                 insertScoreboardStmt.executeUpdate();
             }
         }
     }
 
+    //Nach Kampf ELO ausbessern
     public void updateElo(User winner, User loser, boolean hasWinner) throws SQLException {
         UUID userid1 = winner.getUserId();
         UUID userid2 = loser.getUserId();

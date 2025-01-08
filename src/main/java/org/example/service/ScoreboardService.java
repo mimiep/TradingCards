@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+//Für Request, Scoreboard betreffend zuständig
 public class ScoreboardService {
 
     private ScoreboardLogic scoreboardLogic;
@@ -29,10 +30,10 @@ public class ScoreboardService {
         this.objectMapper = new ObjectMapper();
     }
 
+    //Muss für Authentification ausgeführt werden bevor ELO zurückgegeben wird
     public void handleStats(BufferedReader in, BufferedWriter out) throws IOException {
         String line;
         String token = null;
-
 
         // Token extrahieren
         while (!(line = in.readLine()).isEmpty()) {
@@ -65,6 +66,7 @@ public class ScoreboardService {
         }
     }
 
+    //Muss für Authentification ausgeführt werden bevor Scoreboard zurückgegeben werden kann
     public void handleScoreboard(BufferedReader in, BufferedWriter out) throws IOException {
         String line;
         String authToken = null;

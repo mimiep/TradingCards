@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.UUID;
 
-//abstract ?? Problem
+//Elternteil von Monster und Spell
 public abstract class Card {
 
     private UUID cardId;

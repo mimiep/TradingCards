@@ -19,18 +19,18 @@ public class PackageLogic {
         this.database = new Database();
         this.cardLogic = new CardLogic();
     }
-
+    //Löscht nach Verkauf das Package aus DB
     public void deletePackageById(UUID packageId) throws SQLException {
         try (Connection connection = database.connect()) { // Verbindung herstellen
             String updatePackageSQL = "UPDATE cards SET package_id = NULL WHERE package_id = ?";
             try (PreparedStatement stmt = connection.prepareStatement(updatePackageSQL)) {
-                stmt.setObject(1, packageId, java.sql.Types.OTHER); // PostgreSQL erwartet java.sql.Types.OTHER für UUID
+                stmt.setObject(1, packageId, java.sql.Types.OTHER);
                 int rowsAffected = stmt.executeUpdate();
             }
             System.out.println("GEUPDATED CARDS");
             String deletePackageSQL = "DELETE FROM packages WHERE package_id = ?";
             try (PreparedStatement stmt = connection.prepareStatement(deletePackageSQL)) {
-                stmt.setObject(1, packageId, java.sql.Types.OTHER); // PostgreSQL erwartet java.sql.Types.OTHER für UUID
+                stmt.setObject(1, packageId, java.sql.Types.OTHER);
                 int rowsAffected = stmt.executeUpdate();
             }
             System.out.println("DELETED AUS PACKAGES");
@@ -40,13 +40,14 @@ public class PackageLogic {
 
     }
 
+    //erstellt von CURL die tausend Cards  aus der Liste heraus und
     public UUID createPackageList(List<Card> cards) throws SQLException {
 
         UUID packageId = UUID.randomUUID();
 
         try (Connection connection = database.connect()) {
 
-            // Paket erstellen
+            //Package erstellen
             String insertPackageQuery = "INSERT INTO packages (package_id) VALUES (?)";
             try (PreparedStatement stmt = connection.prepareStatement(insertPackageQuery)) {
                 stmt.setObject(1, packageId);
@@ -54,7 +55,7 @@ public class PackageLogic {
             }
 
             try {
-                // Karten erstellen (CardLogic nutzen)
+                // Karten erstellen mithilfe von CardLogic
                 for (Card card : cards) {
                     cardLogic.createCard(
                             card.getCardId(),
@@ -63,7 +64,7 @@ public class PackageLogic {
                             card.getType(),
                             card.getElementType(),
                             packageId,
-                            card.getUserId() //derzeit Null bis Fehler gefunden
+                            card.getUserId()
                     );
                 }
             } catch (SQLException e) {
@@ -72,11 +73,13 @@ public class PackageLogic {
         }
         return packageId;
     }
+
+    //Package den User verkaufen
     public boolean acquirePackage(UUID userId) throws SQLException {
         try (Connection connection = database.connect()) {
             connection.setAutoCommit(false); // Transaktion starten
 
-            // Überprüfen, ob der Benutzer genug Coins hat (5 Coins für 1 Paket)
+            // Überprüfen, ob der Benutzer genug Coins hat
             String selectUserCoinsQuery = "SELECT coins FROM users WHERE id = ?";
             int userCoins = 0;
             try (PreparedStatement stmt = connection.prepareStatement(selectUserCoinsQuery)) {
@@ -94,7 +97,7 @@ public class PackageLogic {
                 return false;
             }
 
-            // Ein Paket finden, das 5 Karten enthält, die noch keinem Benutzer zugeordnet sind
+            // Ein Paket finden
             String selectPackageQuery = "SELECT package_id FROM packages LIMIT 1";
             UUID packageId = null;
 
@@ -110,8 +113,6 @@ public class PackageLogic {
                 return false;
             }
 
-
-            // Karten des Pakets dem Benutzer zuweisen
             System.out.println("CARDS USER ZUWEISEN");
 
             String updateCardsQuery = "UPDATE cards SET user_id = ? WHERE package_id = ? AND user_id IS NULL";
@@ -121,14 +122,11 @@ public class PackageLogic {
                 stmt.executeUpdate();
             }
 
-
-            // Transaktion abschließen
             connection.commit();
             deletePackageById(packageId);
             return true;
 
         } catch (SQLException e) {
-            // Fehlerbehandlung, rollback durchführen, falls etwas schiefgeht
             throw new SQLException("Fehler beim Erwerb des Pakets: " + e.getMessage(), e);
         }
     }

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
+//Für Request, Deck betreffend zuständig
 public class DeckService {
 
     private UserLogic userLogic;
@@ -30,8 +30,7 @@ public class DeckService {
         this.objectMapper = new ObjectMapper();
     }
 
-
-
+    //muss ausgeführt werden damit man Authentification usw. hat und dann gibt man Werte weiter
     public void handleAddCardToDeck(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         StringBuilder requestBody = new StringBuilder();
         String token = null;
@@ -117,6 +116,7 @@ public class DeckService {
         }
     }
 
+    //Ausgabe von Deck
     public void handleGetDeck(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         String line;
         String token = null;
@@ -152,6 +152,7 @@ public class DeckService {
 
     }
 
+    //das selbe wie oben nur "schöner" ausgegeben
     public void handleGetDeck2(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         String line;
         String token = null;

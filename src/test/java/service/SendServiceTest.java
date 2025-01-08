@@ -14,7 +14,6 @@ public class SendServiceTest {
 
     @Test
     void testSendResponse() throws IOException {
-        // Setup: CharArrayWriter als Mock für den BufferedWriter
         CharArrayWriter charArrayWriter = new CharArrayWriter();
         BufferedWriter writer = new BufferedWriter(charArrayWriter);
 
@@ -36,7 +35,6 @@ public class SendServiceTest {
                 "\r\n" +
                 "{\"message\":\"Success\"}\r\n";
 
-        // Überprüfen, ob die Antwort korrekt geschrieben wurde
         assertEquals(expectedResponse, charArrayWriter.toString());
     }
 

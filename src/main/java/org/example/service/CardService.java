@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+//Für Request, Card betreffend zuständig
 public class CardService {
 
     private CardLogic cardLogic;
@@ -26,6 +27,7 @@ public class CardService {
         this.objectMapper = new ObjectMapper();
     }
 
+    //muss ausgeführt werden damit man Authentification usw. hat und dann gibt man Werte weiter
     public void handleCreateCard(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         StringBuilder requestBody = new StringBuilder();
         String line;

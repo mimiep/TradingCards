@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+//Für Request, Package betreffend zuständig
 public class PackageService {
 
     private PackageLogic packageLogic;
@@ -36,7 +37,7 @@ public class PackageService {
         this.objectMapper = new ObjectMapper();
     }
 
-
+    //Muss für Authentification ausgeführt werden bevor Package erstellt werden kann
     public void handleCreatePackage(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         StringBuilder requestBody = new StringBuilder();
         String line;
@@ -122,6 +123,8 @@ public class PackageService {
             sendService.sendResponse(out, 500, "Internal Server Error", "{\"message\":\"Database error: " + e.getMessage() + "\"}");
         }
     }
+
+    //Muss für Authentification ausgeführt werden bevor Package verkauft werden kann
     public void handleTransactionPackage(BufferedReader in, BufferedWriter out) throws IOException {
         String token = null;
 

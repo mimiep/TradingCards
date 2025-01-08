@@ -2,7 +2,7 @@ package org.example.models;
 
 import java.util.UUID;
 
-
+//Kind von Card
 public class SpellCard extends Card {
 
     public SpellCard(UUID cardId, String name, int damage, String type, String elementType, UUID packageId, UUID userId) {

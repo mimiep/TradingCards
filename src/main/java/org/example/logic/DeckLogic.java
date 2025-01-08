@@ -17,6 +17,7 @@ public class DeckLogic {
         this.database = new Database();
     }
 
+    //Fügt in Table Deck die KartenID und UserID
     public void addCardToDeck(UUID userId, UUID cardId) throws SQLException {
         try (Connection connection = database.connect()) {
             String insertDeckQuery = "INSERT INTO decks (user_id, card_id) VALUES (?, ?)";
@@ -28,26 +29,7 @@ public class DeckLogic {
         }
     }
 
-    public boolean hasDeck(UUID userId) throws SQLException {
-        // Verbindung zur Datenbank herstellen
-        try (Connection connection = database.connect()) {
-            String query = "SELECT COUNT(*) FROM decks WHERE user_id = ?";
-            try (PreparedStatement stmt = connection.prepareStatement(query)) {
-                stmt.setObject(1, userId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        int count = rs.getInt(1);
-                        // Wenn die Anzahl der Karten im Deck größer als 0 ist, hat der Benutzer ein Deck
-                        return count > 0;
-                    } else {
-                        return false;
-                    }
-                }
-            }
-        }
-    }
-
-
+    //Gibt CardId von Deck eines User zurück
     public List<UUID> getDeck(UUID userId) throws SQLException {
         List<UUID> deck = new ArrayList<>();
         try (Connection connection = database.connect()) {
@@ -64,6 +46,7 @@ public class DeckLogic {
         return deck;
     }
 
+    //gibt alle Karten von Deck zurück
     public List<Card> getCardsFromDeck(UUID userId) throws SQLException {
         List<Card> cards = new ArrayList<>();
         // Zuerst die UUIDs der Karten des Benutzers bekommen

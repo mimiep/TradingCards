@@ -21,11 +21,9 @@ public class BattleLogicTest {
     void testAddPlayers() {
         BattleLogic battleLogic = new BattleLogic();
 
-        // Erstelle zwei Benutzer
         User player1 = new User(UUID.randomUUID(), "player1" , null, null, null, null, null, null);
         User player2 = new User(UUID.randomUUID(), "player2", null, null, null, null, null, null);
 
-        // Spieler hinzufügen
         battleLogic.addPlayer(player1);
         battleLogic.addPlayer(player2);
 
@@ -37,15 +35,12 @@ public class BattleLogicTest {
     void testRoundDamage() {
         BattleLogic battleLogic = new BattleLogic();
 
-        // Erstelle zwei Spieler
         User player1 = new User(UUID.randomUUID(), "player1", null, null, null, null, null, null);
         User player2 = new User(UUID.randomUUID(), "player2", null, null, null, null, null, null);
 
-        // Erstelle Karten
         Card card1 = new MonsterCard(UUID.randomUUID(),"Goblin", 11, "Monster", "Normal", null, null);
         Card card2 = new MonsterCard(UUID.randomUUID(),"Dragon", 70, "Monster", "Normal", null, null);
 
-        // Decks initialisieren (dies könnte durch die DeckLogic erfolgen)
         battleLogic.addPlayer(player1);
         battleLogic.addPlayer(player2);
 
@@ -61,11 +56,9 @@ public class BattleLogicTest {
     void testWizzardVsOrk() {
         BattleLogic battleLogic = new BattleLogic();
 
-        // Erstelle Karten
         Card wizzard = new MonsterCard(UUID.randomUUID(),"Wizzard", 11, "Monster", "Normal", null, null);
         Card ork = new MonsterCard(UUID.randomUUID(),"Ork", 9, "Monster", "Normal", null, null);
 
-        // Berechne den Schaden zwischen Wizzard und Ork
         int damageWizzardVsOrk = battleLogic.calculateDamage(wizzard, ork);
 
         // Der Schaden des Wizzards gegen den Ork sollte 0 sein
@@ -76,7 +69,6 @@ public class BattleLogicTest {
     void testKnightVsWaterSpell() {
         BattleLogic battleLogic = new BattleLogic();
 
-        // Erstelle Karten
         Card knight = new MonsterCard(UUID.randomUUID(),"Knight", 20, "Monster", "Normal", null, null);
         Card waterSpell = new SpellCard(UUID.randomUUID(),"WaterSpell", 22, "Spell", "Water", null, null);
 
@@ -84,10 +76,9 @@ public class BattleLogicTest {
         int damageKnightVsWaterSpell = battleLogic.calculateDamage(knight, waterSpell);
         int damageWaterSpellVsKnight = battleLogic.calculateDamage(waterSpell, knight);
 
-        // Der Knight verliert sofort gegen den WaterSpell (negativer Schaden)
+
         assertTrue(damageKnightVsWaterSpell == -100); // Knight verliert sofort
 
-        // WaterSpell sollte nicht gegen den Knight gewinnen, aber auch keinen gewaltigen Schaden machen
         assertTrue(damageWaterSpellVsKnight >= 0); // Der Schaden sollte nicht negativ sein
     }
 
@@ -95,18 +86,16 @@ public class BattleLogicTest {
     void testKrakenVsSpells() {
         BattleLogic battleLogic = new BattleLogic();
 
-        // Erstelle Karten
         Card kraken = new MonsterCard(UUID.randomUUID(),"Kraken", 20, "Monster", "Normal", null, null);
         Card waterSpell = new SpellCard(UUID.randomUUID(),"WaterSpell", 19, "Spell", "Water", null, null);
 
-        // Berechne den Schaden zwischen Kraken und WaterSpell
         int damageKrakenVsWaterSpell = battleLogic.calculateDamage(kraken, waterSpell);
         int damageWaterSpellVsKraken = battleLogic.calculateDamage(waterSpell, kraken);
 
-        // Kraken ist immun gegen Spells, daher sollte der Schaden extrem hoch sein
+        //Schaden extrem hoch
         assertEquals(100, damageKrakenVsWaterSpell);
 
-        // WaterSpell sollte keinen extremen Schaden gegen Kraken machen
+        //Keinen extremen Schaden gegen Kraken machen
         assertTrue(damageWaterSpellVsKraken >= 0);
     }
 
@@ -114,15 +103,13 @@ public class BattleLogicTest {
     void testFireElfVsDragon() {
         BattleLogic battleLogic = new BattleLogic();
 
-        // Erstelle Karten
         Card fireElf = new MonsterCard(UUID.randomUUID(),"FireElf", 11, "Monster", "Fire", null, null);
         Card dragon = new MonsterCard(UUID.randomUUID(),"Dragon", 12, "Normal", "Normel", null, null);
 
-        // Berechne den Schaden zwischen FireElf und Dragon
         int damageFireElfVsDragon = battleLogic.calculateDamage(fireElf, dragon);
         int damageDragonVsFireElf = battleLogic.calculateDamage(dragon, fireElf);
 
-        // FireElf weicht dem Dragon aus, daher sollte der Schaden 0 sein
+        //Schaden soll 0 sein
         assertEquals(0, damageFireElfVsDragon);
 
         // Dragon sollte normalen Schaden gegen FireElf machen
@@ -133,15 +120,12 @@ public class BattleLogicTest {
     void testWaterVsFire() {
         BattleLogic battleLogic = new BattleLogic();
 
-        // Erstelle Karten
         Card waterCard = new SpellCard(UUID.randomUUID(),"WaterCard", 20, "Spell","Water", null , null);
         Card fireCard = new SpellCard(UUID.randomUUID(),"FireCard", 40, "Spell","Fire", null, null  );
 
-        // Berechne den Schaden zwischen WaterCard und FireCard
         int damageWaterVsFire = battleLogic.calculateDamage(waterCard, fireCard);
         int damageFireVsWater = battleLogic.calculateDamage(fireCard, waterCard);
 
-        // Water verursacht doppelten Schaden gegen Fire
         assertTrue(damageWaterVsFire > damageFireVsWater);
     }
 
@@ -149,11 +133,9 @@ public class BattleLogicTest {
     void testNormalVsWater() {
         BattleLogic battleLogic = new BattleLogic();
 
-        // Erstelle Karten
         Card normalCard = new MonsterCard(UUID.randomUUID(),"NormalCard", 21, "Random", "Normal", null, null);
         Card waterCard = new MonsterCard(UUID.randomUUID(),"WaterCard", 25, "Random" ,"Water", null, null);
 
-        // Berechne den Schaden zwischen NormalCard und WaterCard
         int damageNormalVsWater = battleLogic.calculateDamage(normalCard, waterCard);
         int damageWaterVsNormal = battleLogic.calculateDamage(waterCard, normalCard);
 

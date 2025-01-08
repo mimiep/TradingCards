@@ -11,6 +11,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 
+//Für Request, Battle betreffend zuständig
 public class BattleService {
 
     private BattleLogic battleLogic;
@@ -23,8 +24,7 @@ public class BattleService {
         this.sendService = new SendService();
     }
 
-
-
+    //Wird von RequestHandler aufgerufen und muss durchgeführt werden bevor battle gestartet werden kann
     public void handleBattle(BufferedReader in, BufferedWriter out) throws IOException, SQLException {
         String line;
         String authToken = null;

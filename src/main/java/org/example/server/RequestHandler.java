@@ -85,7 +85,7 @@ public class RequestHandler implements Runnable {
             e.printStackTrace();
         } finally {
             try {
-                socket.close();
+                socket.close(); //Socket schließen
             } catch (IOException e) {
                 System.out.println("Error closing socket: " + e.getMessage());
             }

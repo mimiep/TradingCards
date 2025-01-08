@@ -39,7 +39,7 @@ public class RequestHandlerTest {
             }
         };
 
-        // Erstelle die notwendigen Service-Objekte (kannst du je nach Bedarf anpassen)
+        // Erstelle die notwendigen Service-Objekte
         UserService userService = new UserService();
         DeckService deckService = new DeckService();
         CardService cardService = new CardService();
@@ -48,16 +48,14 @@ public class RequestHandlerTest {
         BattleService battleService = new BattleService();
         SendService sendService = new SendService();
 
-        // Erstelle den RequestHandler mit dem gemockten Socket
+        // Erstelle den RequestHandler mit dem gemockten Socket, ich hasse Mocking so sehr
         RequestHandler requestHandler = new RequestHandler(socket, userService, deckService, cardService, packageService, scoreboardService, battleService, sendService);
 
-        // Führe den RequestHandler aus
         requestHandler.run();
 
-        // Hole die Antwort aus dem OutputStream
+        // Antwort aus OutputStream
         String response = outputStream.toString();
 
-        // Überprüfe, ob die Antwort den Statuscode 405 enthält
         assertTrue(response.contains("405"), "Response should contain 405");
         assertTrue(response.contains("Method Not Allowed"), "Response should contain 'Method Not Allowed'");
     }

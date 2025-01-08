@@ -12,12 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CardModelsTest {
     @Test
     void testCardCreation() {
-        // UUIDs für den Test erzeugen
         UUID cardId = UUID.randomUUID();
         UUID packageId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        // Erstelle ein Card-Objekt
         Card card = new SpellCard(cardId, "Fireball", 50, "Spell", "Fire", packageId, userId);
 
         // Teste, ob die ID korrekt gesetzt wurde
@@ -45,12 +43,10 @@ public class CardModelsTest {
 
     @Test
     void testSpellCardInheritance() {
-        // UUIDs für den Test erzeugen
         UUID cardId = UUID.randomUUID();
         UUID packageId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        // Erstelle ein SpellCard-Objekt
         SpellCard spellCard = new SpellCard(cardId, "Water Blast", 40, "Spell", "Water", packageId, userId);
 
         // Teste, ob die SpellCard die Card-Eigenschaften korrekt erbt
@@ -65,13 +61,11 @@ public class CardModelsTest {
 
     @Test
     void testDifferentCardInstances() {
-        // UUIDs für den Test erzeugen
         UUID cardId1 = UUID.randomUUID();
         UUID cardId2 = UUID.randomUUID();
         UUID packageId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        // Erstelle zwei verschiedene SpellCards
         SpellCard spellCard1 = new SpellCard(cardId1, "Fireball", 50, "Spell", "Fire", packageId, userId);
         SpellCard spellCard2 = new SpellCard(cardId2, "Ice Blast", 30, "Spell", "Water", packageId, userId);
 
@@ -95,7 +89,6 @@ public class CardModelsTest {
         UUID packageId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        // Erstelle eine SpellCard und eine MonsterCard
         SpellCard spellCard = new SpellCard(cardId, "Fireball", 50, "Spell", "Fire", packageId, userId);
         MonsterCard monsterCard = new MonsterCard(cardId, "Dragon", 80, "Monster", "Fire", packageId, userId);
 
@@ -111,7 +104,6 @@ public class CardModelsTest {
         UUID packageId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
 
-        // Erstelle eine SpellCard und eine MonsterCard
         SpellCard spellCard = new SpellCard(cardId1, "Fireball", 50, "Spell", "Fire", packageId, userId);
         MonsterCard monsterCard = new MonsterCard(cardId2, "Dragon", 80, "Monster", "Fire", packageId, userId);
 

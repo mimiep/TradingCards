@@ -48,7 +48,6 @@ public class UserServiceTest {
                 "{\"message\":\"User registered successfully.\"}\r\n" +
                 "\r\n";
 
-        // Überprüfe, ob die Antwort die erwartete Antwort ist
         assertEquals(expectedResponse, charArrayWriter.toString());
     }
 

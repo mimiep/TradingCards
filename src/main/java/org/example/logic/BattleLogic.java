@@ -27,6 +27,7 @@ public class BattleLogic {
         this.players.add(user);
     }
 
+    //Startet Kampf zwischen 2 Usern
     public void startBattle() throws SQLException {
         System.out.println("********BATTLE STARTED***********");
 
@@ -36,7 +37,7 @@ public class BattleLogic {
         UUID userid1 = player1.getUserId();
         UUID userid2 = player2.getUserId();
 
-        List<Card> deck1 = deckLogic.getCardsFromDeck(userid1);
+        List<Card> deck1 = deckLogic.getCardsFromDeck(userid1); //Deck bekommen
         List<Card> deck2 = deckLogic.getCardsFromDeck(userid2);
 
         if (deck1.isEmpty() || deck2.isEmpty()) {
@@ -45,21 +46,21 @@ public class BattleLogic {
         }
 
         Random random = new Random();
-        StringBuilder battleLog = new StringBuilder("Battle Log:\n");
+        StringBuilder battleLog = new StringBuilder("Battle Log:\n"); //Log welches am Ende ausgegeben wird
         int rounds = 0;
 
         while (!deck1.isEmpty() && !deck2.isEmpty() && rounds < 13) { //da gehört eigentlih 100 hin, aber das ist hässlich zu lesen
             rounds++;
-            //battleLog.append("Round ").append(rounds).append(":\n");
             battleLog.append(
                     " _______________\r\n" +
-                            "|   ROUND " + rounds + "    |\r\n" +  // Rundennummer hier einfügen
-                            "|_______________|\r\n"
+                    "|   ROUND " + rounds + "    |\r\n" +
+                    "|_______________|\r\n"
             );
 
             Card card1 = deck1.get(random.nextInt(deck1.size()));
             Card card2 = deck2.get(random.nextInt(deck2.size()));
 
+            //Log hinzufügen
             battleLog.append(player1.getUsername()).append("'s card: ").append(card1.getName())
                     .append(" (Damage: ").append(card1.getDamage()).append(", Type: ").append(card1.getType()).append(")\n");
             battleLog.append(player2.getUsername()).append("'s card: ").append(card2.getName())
@@ -142,9 +143,9 @@ public class BattleLogic {
 
     }
 
+    //berechnen des Schadens
     public int calculateDamage(Card attacker, Card defender) {
         // Goblins vs Dragons
-
         if (attacker.getName().equalsIgnoreCase("Goblin") && defender.getName().equalsIgnoreCase("Dragon")) {
             return 0; // Goblins greifen keine Drachen an
         }

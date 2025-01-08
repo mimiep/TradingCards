@@ -18,6 +18,7 @@ public class CardLogic {
         this.database = new Database();
     }
 
+    //Erstellt Karte
     public void createCard(UUID cardId, String name, int damage, String type, String elementType, UUID packageId, UUID userId) throws SQLException {
 
         userId=null;
@@ -28,7 +29,7 @@ public class CardLogic {
             try (PreparedStatement stmt = connection.prepareStatement(insertCardQuery)) {
                 stmt.setObject(1, cardId);
                 stmt.setString(2, name);
-                stmt.setInt(3, damage);  // damage als Integer
+                stmt.setInt(3, damage);
                 stmt.setString(4, type);
                 stmt.setString(5, elementType);
                 stmt.setObject(6, packageId);
@@ -38,7 +39,7 @@ public class CardLogic {
         }
     }
 
-
+    //Gibt Karten von einem User zurück
     public List<Card> getCardsByUser(UUID userId) throws SQLException {
         List<Card> cards = new ArrayList<>();
         try (Connection connection = database.connect()) {
@@ -69,26 +70,23 @@ public class CardLogic {
         return cards;
     }
 
+    //gibt zurück ob es dem bestimmten User gibt
     public boolean belongToUser(UUID userId, UUID cardId) throws SQLException {
         try (Connection connection = database.connect()) {
-            // SQL-Abfrage, um zu überprüfen, ob die Karte dem Benutzer gehört
             String query = "SELECT COUNT(*) FROM cards WHERE user_id = ? AND card_id = ?";
 
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
-                // Parameter setzen: userId und cardId
                 stmt.setObject(1, userId);
                 stmt.setObject(2, cardId);
 
-                // Abfrage ausführen und Ergebnis lesen
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        // Wenn COUNT > 0, bedeutet es, dass der Benutzer diese Karte im Deck hat
                         return rs.getInt(1) > 0;
                     }
                 }
             }
         }
-        return false; // Wenn keine Übereinstimmung gefunden wurde, gehört die Karte nicht dem Benutzer
+        return false;
     }
 
 }
