@@ -1,6 +1,5 @@
-package org.example.models;
+package org.example.logic;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 

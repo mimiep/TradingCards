@@ -1,6 +1,8 @@
-package org.example.models;
+package org.example.logic;
 
 import org.example.database.Database;
+import org.example.models.ScoreboardEntry;
+import org.example.models.User;
 
 import java.sql.*;
 import java.util.ArrayList;

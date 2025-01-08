@@ -1,6 +1,9 @@
-package org.example.models;
+package org.example.logic;
 
 import org.example.database.Database;
+import org.example.models.Card;
+import org.example.models.MonsterCard;
+import org.example.models.SpellCard;
 
 import java.sql.*;
 import java.util.ArrayList;

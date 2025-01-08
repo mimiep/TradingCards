@@ -1,8 +1,7 @@
-package org.example.models;
-import org.example.database.Database;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+package org.example.logic;
+import org.example.models.Card;
+import org.example.models.User;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
