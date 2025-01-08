@@ -50,7 +50,12 @@ public class BattleLogic {
 
         while (!deck1.isEmpty() && !deck2.isEmpty() && rounds < 13) { //da gehört eigentlih 100 hin, aber das ist hässlich zu lesen
             rounds++;
-            battleLog.append("Round ").append(rounds).append(":\n");
+            //battleLog.append("Round ").append(rounds).append(":\n");
+            battleLog.append(
+                    " _______________\r\n" +
+                            "|   ROUND " + rounds + "    |\r\n" +  // Rundennummer hier einfügen
+                            "|_______________|\r\n"
+            );
 
             Card card1 = deck1.get(random.nextInt(deck1.size()));
             Card card2 = deck2.get(random.nextInt(deck2.size()));
@@ -65,14 +70,41 @@ public class BattleLogic {
 
             if (damage1 > damage2) {
                 battleLog.append(player1.getUsername()).append("'s card wins!\n");
+                battleLog.append(
+                        "+---------+\n" +
+                                "|         |\n" +
+                                "|   ♠ ♣   |\n" +
+                                "|  CHANGE |\n" +
+                                "|   ♥ ♦   |\n" +
+                                "|         |\n" +
+                                "+---------+\n"
+                );
                 deck2.remove(card2);
                 deck1.add(card2);
             } else if (damage1 < damage2) {
                 battleLog.append(player2.getUsername()).append("'s card wins!\n");
+                battleLog.append(
+                        "+---------+\n" +
+                                "|         |\n" +
+                                "|   ♠ ♣   |\n" +
+                                "|  CHANGE |\n" +
+                                "|   ♥ ♦   |\n" +
+                                "|         |\n" +
+                                "+---------+\n"
+                );
                 deck1.remove(card1);
                 deck2.add(card1);
             } else {
                 battleLog.append("It's a draw! No cards are exchanged.\n");
+                battleLog.append(
+                        "+---------+\n" +
+                                "|         |\n" +
+                                "|   ♠ ♣   |\n" +
+                                "|   DRAW  |\n" +
+                                "|   ♥ ♦   |\n" +
+                                "|         |\n" +
+                                "+---------+\n"
+                );
             }
 
             battleLog.append("\n");
@@ -98,6 +130,12 @@ public class BattleLogic {
         }
 
         battleLog.append("Battle finished after ").append(rounds).append(" rounds. Winner: ").append(winner).append("\n");
+        battleLog.append(
+                "      _____\r\n" +
+                        "     |     |\r\n" +
+                        "     |  🏆 |\r\n" +
+                        "     |_____| \r\n"
+        );
         System.out.println(battleLog.toString());
 
         battleLog.setLength(0); //entleeren

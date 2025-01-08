@@ -49,14 +49,22 @@ public class BattleService {
 
         }
         else if(battleLogic.getPlayers() < 2){
-            sendService.sendResponse(out, 200, "OK", "{\"message\":\"Player joined.\"}"+ "\r\n");
+            sendService.sendResponse(out, 200, "OK", "{\"message\":\"One Player.\"}" + "\r\n" +
+                    "   O       \r\n" +
+                    "  /|\\     \r\n" +
+                    "  / \\    \r\n");
         }
 
         else {
             battleLogic.startBattle();
         }
 
-        sendService.sendResponse(out, 201, "OK", "{\"message\":\"Battle finished.\"}"+ "\r\n");
+        sendService.sendResponse(out, 201, "OK",
+                "{\"message\":\"Two Player.\"}" + "\r\n" +
+                        "   O     O    \r\n" +
+                        "  /|\\   /|\\  \r\n" +
+                        "  / \\   / \\  \r\n"
+        );
     }
 
 }
